@@ -1,3 +1,6 @@
 [submodule "TPLs/blt"]
 	path = TPLs/blt
 	url = https://github.com/LLNL/blt.git
+[submodule "TPLs/kokkos"]
+	path = TPLs/kokkos
+	url = https://github.com/kokkos/kokkos.git
