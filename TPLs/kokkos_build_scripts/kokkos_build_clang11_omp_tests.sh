@@ -6,8 +6,8 @@ cmake \
   -DCMAKE_INSTALL_PREFIX="kokkos_install" \
   -DKokkos_ENABLE_SERIAL=On \
   -DKokkos_ENABLE_OPENMP=On \
-  -DKokkos_ENABLE_TESTS=On \
-  -DKokkos_ENABLE_EXAMPLES=On \
+  -DKokkos_ENABLE_TESTS=On \
+  -DKokkos_ENABLE_EXAMPLES=On \
   ..
 #  -DKokkos_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE=On \
 #  -DKokkos_ENABLE_TESTS=On \
