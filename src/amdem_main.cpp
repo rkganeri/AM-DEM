@@ -15,18 +15,6 @@ int main(int argc, char *argv[]) {
     // parse command line
     CLI::App app{"AMDEM"};
     
-    double x_range = 0.0;
-    app.add_option("-x, --xrange", x_range, "X-range of bounding box")
-        ->required()->check(CLI::PositiveNumber);
-
-    double y_range = 0.0;
-    app.add_option("-y, --yrange", y_range, "Y-range of bounding box")
-        ->required()->check(CLI::PositiveNumber);
-
-    double z_range = 0.0;
-    app.add_option("-z, --zrange", z_range, "Z-range of bounding box")
-        ->required()->check(CLI::PositiveNumber);
-
     double radius = 0.0;
     app.add_option("-r, --radius", radius, "Radius of DEM particles")
         ->required()->check(CLI::PositiveNumber);
@@ -56,6 +44,8 @@ int main(int argc, char *argv[]) {
     // initialize Kokkos
     Kokkos::initialize(argc, argv);
 
+    // create our global settings object
+    amdem::GlobalSettings global_settings(num_particles,radius);
     
 
 
