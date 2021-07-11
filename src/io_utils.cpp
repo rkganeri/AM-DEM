@@ -7,7 +7,7 @@
 namespace amdem {
 
     // simple helper function to print message on its own line
-    void printMessage(const std::string& msg); {
+    void printMessage(const std::string& msg) {
         std::cout << msg << std::endl << std::flush;
     }
 

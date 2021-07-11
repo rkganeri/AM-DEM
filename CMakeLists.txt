@@ -1,60 +1,67 @@
 # CMake 3.18 required to compile Cuda code with c++17. If only an earlier version of
-# Cmake is available we need to set all the standards to c++14 instead.
+# Cmake is available we need to set all the standards to c++14 instead (if using Cuda).
 cmake_minimum_required(VERSION 3.18)
-set(CPP_VERSION "17")   
+set(CPP_VERSION "17")
 
 # set project name and info
 project(AMDEM
-        VERSION 1.1
-        DESCRIPTION "A DEM code to model powder deposition for additive manufacturing"
-        LANGUAGES CXX
-       )
+        VERSION 1.0
+        DESCRIPTION "A DEM code to model powder deposition for additive manufacturing"
+        LANGUAGES CXX)
 
 project(AMDEM-lib
-        VERSION 1.1
-        DESCRIPTION "A library of the DEM functions/classes"
-        LANGUAGES CXX
-       )
+        VERSION 1.0
+        DESCRIPTION "A library of DEM helper functions/calsses"
+        LANGUAGES CXX)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/TPLs" ${CMAKE_MODULE_PATH})
 
 ### Require out-of-source builds
 file(TO_CMAKE_PATH "${PROJECT_BINARY_DIR}/CMakeLists.txt" LOC_PATH)
 if(EXISTS "${LOC_PATH}")
-    message(FATAL_ERROR 
-        "You cannot build in a source directory (or any directory with a CMakeLists.txt file). "
+    message(FATAL_ERROR " You cannot build in a source directory (or any directory with a CMakeLists.txt file). "
         "Please make a build subdirectory. Feel free to remove CMakeCache.txt and CMakeFiles." )
 endif()
 
+# Set default to Debug for now... can change this once everything is working
+set(default_build_type "Debug") 
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
+    set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING "Choose the type of build." FORCE)
+    # set the available options for the cmake-gui 
+    set_property(CAHCE CMAKE_BUILD_TYPE PROPERTY STRING
+                 "Debug" "Release" "MinSeizeRel" "RelWithDebInfo")
+endif()
+
+# see full compile and linking commands for compilation debugging
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 #------------------------------------------------------------------------------
 # Setup BLT
 #------------------------------------------------------------------------------
-
 if (DEFINED BLT_SOURCE_DIR)
-    # Support having a shared BLT outside of the repository if given a BLT_SOURCE_DIR
-    if (NOT EXISTS ${BLT_SOURCE_DIR}/SetupBLT.cmake)
-        message(FATAL_ERROR "Given BLT_SOURCE_DIR does not contain SetupBLT.cmake")
-    endif()
+    # Support having a shared BLT outside of the repository if given a BLT_SOURCE_DIR
+    if (NOT EXISTS ${BLT_SOURCE_DIR}/SetupBLT.cmake)
+        message(FATAL_ERROR "Given BLT_SOURCE_DIR does not contain SetupBLT.cmake")
+    endif()
 else()
-    # Use internal BLT if no BLT_SOURCE_DIR is given
-    set(BLT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/TPLs/blt" CACHE PATH "")
-    if (NOT EXISTS ${BLT_SOURCE_DIR}/SetupBLT.cmake)
-        message(FATAL_ERROR
-            "The BLT git submodule is not present. "
-            "Either run the following two commands in your git repository: \n"
-            "    git submodule init\n"
-            "    git submodule update\n"
-            "Or add -DBLT_SOURCE_DIR=/path/to/blt to your CMake command." )
-    endif()
+    # Use internal BLT if no BLT_SOURCE_DIR is given
+    set(BLT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/TPLs/blt" CACHE PATH "")
+    if (NOT EXISTS ${BLT_SOURCE_DIR}/SetupBLT.cmake)
+        message(FATAL_ERROR
+            "The BLT git submodule is not present. "
+            "Either run the following two commands in your git repository: \n"
+            "    git submodule init\n"
+            "    git submodule update\n"
+            "Or add -DBLT_SOURCE_DIR=/path/to/blt to your CMake command." )
+    endif()
 endif()
 
 if (NOT BLT_CXX_STD)
-    set(BLT_CXX_STD "c++${CPP_VERSION}" CACHE STRING "")
+    set(BLT_CXX_STD "c++${CPP_VERSION}" CACHE STRING "")
 endif()
 
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
-
 
 #------------------------------------------------------------------------------
 # Linking to Kokkos, et al.
@@ -63,19 +70,19 @@ include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
 # other build configurations 
 #------------------------------------------------------------------------------
 if(NOT EXISTS ${KOKKOS_DIR}/KokkosConfig.cmake)
-    message(FATAL_ERROR "Missing required file \"KOKKOS_DIR/KokkosConfig.cmake\" associated with "
-        "an installed Kokkos, ensure directory is correct in host-config file." )
+    message(FATAL_ERROR "Missing required file \"KOKKOS_DIR/KokkosConfig.cmake\" associated with an installed Kokkos, "
+        "ensure directory is correct in host-config file")
 endif()
 find_package(Kokkos REQUIRED
-             NO_DEFAULT_PATH
-             PATHS ${KOKKOS_DIR})
+             NO_DEFAULT_PATH
+             PATHS ${KOKKOS_DIR})
 
 if (Kokkos_ENABLE_CUDA)
-    # fatal error if not enabled
-    kokkos_check(OPTIONS CUDA_LAMBDA)
-    set(amdem_dependencies ${amdem_dependencies} openmp cuda)
+    # fatal error if not enabled
+    kokkos_check(OPTIONS CUDA_LAMBDA)
+    set(amdem_dependencies ${amdem_dependencies} openmp cuda)
 else()
-    set(amdem_dependencies ${amdem_dependencies} openmp)
+    set(amdem_dependencies ${amdem_dependencies} openmp)
 endif()
 
 set(amdem_dependencies ${amdem_dependencies} Kokkos::kokkos)
@@ -97,14 +104,13 @@ set(amdem_dependencies ${amdem_dependencies} Kokkos::kokkos)
 SET(FMT_ROOT "${CMAKE_CURRENT_LIST_DIR}/TPLs/fmt/build/fmt_install" CACHE PATH "")
 SET(FMT_DIR "${FMT_ROOT}/lib/cmake/fmt" CACHE PATH "")
 if(NOT EXISTS ${FMT_DIR}/fmt-config.cmake)
-    message(FATAL_ERROR "Missing required file \"FMT_DIR/fmt-config.cmake\" associated with "
-        "an installed fmt, ensure directory is correct in CMakeLists.txt or that the "
-        "TPLs/fmt git submodule is installed ." )
+    message(FATAL_ERROR "Missing required file \"FMT_DIR/fmt-config.cmake\" associated with an installed fmt, "
+        "ensure directory is correct in CMakeLists.txt or that the TPLs/fmt git submodule is installed.")
 endif()
 
 find_package(fmt REQUIRED
-             NO_DEFAULT_PATH
-             PATHS ${FMT_DIR})
+             NO_DEFAULT_PATH
+             PATHS ${FMT_DIR})
 
 set(amdem_dependencies ${amdem_dependencies} fmt::fmt)
 
@@ -113,38 +119,28 @@ set(amdem_dependencies ${amdem_dependencies} fmt::fmt)
 #------------------------------------------------------------------------------
 set(amdem_include_dirs ${amdem_include_dirs} "${CMAKE_CURRENT_LIST_DIR}/TPLs/CLI11")
 
-##------------------------------------------------------------------------------
-## Set up target and build commands
-##------------------------------------------------------------------------------
-# Set default to Debug for now... can change this once everything is working
-set(default_build_type "Debug") 
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
-    set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING "Choose the type of build." FORCE)
-    # Set the possible values of build type for cmake-gui
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-                 "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
-endif()
 
-# see full compile and linking commands for compilation debugging
-set(CMAKE_VERBOSE_MAKEFILE ON)
+##------------------------------------------------------------------------------
+## Create actual library and exe
+##------------------------------------------------------------------------------
 
 # Add directories and compile commands
 add_subdirectory(src)
 
 # add library and exe (which just has main then links to the lib)
-blt_add_library(NAME       AMDEM-lib
-                SOURCES    ${amdem-lib_source_files}
-                HEADERS    ${amdem-lib_header_files}
-                INCLUDES   ${amdem_include_dirs}
-                DEFINES    ${amdem_defines}
-                DEPENDS_ON ${amdem_dependencies})
+blt_add_library(NAME       AMDEM-lib
+                SOURCES    ${amdem-lib_source_files}
+                HEADERS    ${amdem-lib_header_files}
+                INCLUDES   ${amdem_include_dirs}
+                DEFINES    ${amdem_defines}
+                DEPENDS_ON ${amdem_dependencies})
 
-blt_add_executable(NAME       AMDEM
-                   SOURCES    ${amdem-exe_source_files}
-                   INCLUDES   ${amdem_include_dirs}
-                   DEFINES    ${amdem_defines}
-                   DEPENDS_ON ${amdem_dependencies} AMDEM-lib)
+blt_add_executable(NAME       AMDEM
+                   SOURCES    ${amdem-exe_source_files}
+                   INCLUDES   ${amdem_include_dirs}
+                   DEFINES    ${amdem_defines}
+                   DEPENDS_ON ${amdem_dependencies} AMDEM-lib)
+
 
 # the next line ensures -std=c++xx instead of -std=g++xx
 set_target_properties(AMDEM PROPERTIES CXX_EXTENSIONS OFF)
@@ -154,7 +150,7 @@ set_target_properties(AMDEM-lib PROPERTIES CXX_EXTENSIONS OFF)
 ##------------------------------------------------------------------------------
 ## Set up unit tests
 ##------------------------------------------------------------------------------
-if (ENABLE_TESTS)   # on by default with BLT
+if(ENABLE_TESTS) # on by default with BLT
 
 #    add_subdirectory(tests)
 #    set(testing_dependencies AMDEM-lib gtest)

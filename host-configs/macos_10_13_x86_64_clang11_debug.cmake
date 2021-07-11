@@ -10,7 +10,7 @@
 #---------------------------------------
 # Definitions
 #---------------------------------------
-set(dem_defines ${dem_defines} DEM_HOST_ONLY CACHE PATH "")
+set(amdem_defines ${amdem_defines} AMDEM_HOST_ONLY CACHE PATH "")
 
 #---------------------------------------
 # Compilers

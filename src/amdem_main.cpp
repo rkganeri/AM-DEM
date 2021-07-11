@@ -1,5 +1,5 @@
 // Insert Copyright stuff here
-)
+
 #include <memory>
 #include <string>
 
@@ -52,9 +52,10 @@ int main(int argc, char *argv[]) {
         amdem::printMessage(fmt::format("   num_particles = {} ",num_particles));
     }
 
-
     // initialize Kokkos
     Kokkos::initialize(argc, argv);
+
+    
 
 
 

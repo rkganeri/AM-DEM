@@ -1,4 +1,3 @@
-
 set(amdem-lib_source_files
     ${amdem-lib_source_files}
     ${CMAKE_CURRENT_LIST_DIR}/io_utils.cpp
@@ -7,7 +6,7 @@ set(amdem-lib_source_files
    )
 
 set(amdem-exe_source_files
-    ${CMAKE_CURRENT_LIST_DIR}/powder_deposition_main.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/amdem_main.cpp
     PARENT_SCOPE
    )
 
