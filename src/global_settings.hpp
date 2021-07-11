@@ -26,19 +26,19 @@ class GlobalSettings {
         const double max_rad_;
         const double num_particles_;
 
-        // material properties
-        const double rho_;
-        const double nu_;
-        const double youngs_mod_;
-
         // simulation controls
         const double t_start_;
         const double t_end_;
         const double dt_;
 
-        // declare constructor
-        GlobalSettings(const int num_particles, const int mean_rad);
+        // material properties
+        const double rho_;
+        const double nu_;
+        const double youngs_mod_;
 
+        // declare constructor
+        GlobalSettings(const int num_particles, const int mean_rad, const int stdev_rad);
+};
 
 } // namespace amdem
 
