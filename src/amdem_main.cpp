@@ -3,8 +3,9 @@
 #include <memory>
 #include <string>
 
-#include "CLI11/CLI11.hpp"
+#include "CLI11.hpp"
 #include "Kokkos_Core.hpp"
+#include "fmt/core.h"
 
 #include "io_utils.hpp"
 #include "terminate.hpp"
@@ -12,7 +13,7 @@
 int main(int argc, char *argv[]) {
 
     // parse command line
-    CLI::App app{"AM_DEM"};
+    CLI::App app{"AMDEM"};
     
     double x_range = 0.0;
     app.add_option("-x, --xrange", x_range, "X-range of bounding box")
@@ -31,7 +32,7 @@ int main(int argc, char *argv[]) {
         ->required()->check(CLI::PositiveNumber);
 
     int num_particles = 0;
-    app.add_option("-n, --numparticles", radius, "Number of DEM particles")
+    app.add_option("-n, --numparticles", num_particles, "Number of DEM particles")
         ->required()->check(CLI::PositiveNumber);
 
     bool verbose = false;

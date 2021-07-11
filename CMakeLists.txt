@@ -4,12 +4,12 @@ cmake_minimum_required(VERSION 3.18)
 set(CPP_VERSION "17")
 
 # set project name and info
-project(AMDEM
+project(amdem
         VERSION 1.0
         DESCRIPTION "A DEM code to model powder deposition for additive manufacturing"
         LANGUAGES CXX)
 
-project(AMDEM-lib
+project(amdem-lib
         VERSION 1.0
         DESCRIPTION "A library of DEM helper functions/calsses"
         LANGUAGES CXX)
@@ -29,7 +29,7 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
     set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING "Choose the type of build." FORCE)
     # set the available options for the cmake-gui 
-    set_property(CAHCE CMAKE_BUILD_TYPE PROPERTY STRING
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
                  "Debug" "Release" "MinSeizeRel" "RelWithDebInfo")
 endif()
 
@@ -128,23 +128,23 @@ set(amdem_include_dirs ${amdem_include_dirs} "${CMAKE_CURRENT_LIST_DIR}/TPLs/CLI
 add_subdirectory(src)
 
 # add library and exe (which just has main then links to the lib)
-blt_add_library(NAME       AMDEM-lib
+blt_add_library(NAME       amdem-lib
                 SOURCES    ${amdem-lib_source_files}
                 HEADERS    ${amdem-lib_header_files}
                 INCLUDES   ${amdem_include_dirs}
                 DEFINES    ${amdem_defines}
                 DEPENDS_ON ${amdem_dependencies})
 
-blt_add_executable(NAME       AMDEM
+blt_add_executable(NAME       amdem
                    SOURCES    ${amdem-exe_source_files}
                    INCLUDES   ${amdem_include_dirs}
                    DEFINES    ${amdem_defines}
-                   DEPENDS_ON ${amdem_dependencies} AMDEM-lib)
+                   DEPENDS_ON ${amdem_dependencies} amdem-lib)
 
 
 # the next line ensures -std=c++xx instead of -std=g++xx
-set_target_properties(AMDEM PROPERTIES CXX_EXTENSIONS OFF)
-set_target_properties(AMDEM-lib PROPERTIES CXX_EXTENSIONS OFF)
+set_target_properties(amdem PROPERTIES CXX_EXTENSIONS OFF)
+set_target_properties(amdem-lib PROPERTIES CXX_EXTENSIONS OFF)
 
 
 ##------------------------------------------------------------------------------
@@ -153,7 +153,7 @@ set_target_properties(AMDEM-lib PROPERTIES CXX_EXTENSIONS OFF)
 if(ENABLE_TESTS) # on by default with BLT
 
 #    add_subdirectory(tests)
-#    set(testing_dependencies AMDEM-lib gtest)
+#    set(testing_dependencies amdem-lib gtest)
 #    set(test_include_dirs ${amdem_include_dirs} tests src)
 #
 #    # 1. test_mesh
