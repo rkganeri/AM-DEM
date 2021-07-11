@@ -4,13 +4,13 @@ cmake_minimum_required(VERSION 3.18)
 set(CPP_VERSION "17")   
 
 # set project name and info
-project(dem
+project(AMDEM
         VERSION 1.1
         DESCRIPTION "A DEM code to model powder deposition for additive manufacturing"
         LANGUAGES CXX
        )
 
-project(dem-lib
+project(AMDEM-lib
         VERSION 1.1
         DESCRIPTION "A library of the DEM functions/classes"
         LANGUAGES CXX
@@ -73,12 +73,12 @@ find_package(Kokkos REQUIRED
 if (Kokkos_ENABLE_CUDA)
     # fatal error if not enabled
     kokkos_check(OPTIONS CUDA_LAMBDA)
-    set(dem_dependencies ${dem_dependencies} openmp cuda)
+    set(amdem_dependencies ${amdem_dependencies} openmp cuda)
 else()
-    set(dem_dependencies ${dem_dependencies} openmp)
+    set(amdem_dependencies ${amdem_dependencies} openmp)
 endif()
 
-set(dem_dependencies ${dem_dependencies} Kokkos::kokkos)
+set(amdem_dependencies ${amdem_dependencies} Kokkos::kokkos)
 
 #==========================================================================
 # if(NOT EXISTS ${KOKKOS_KERNELS_DIR}/KokkosKernelsConfig.cmake)
@@ -88,7 +88,7 @@ set(dem_dependencies ${dem_dependencies} Kokkos::kokkos)
 #              NO_DEFAULT_PATH
 #              PATHS ${KOKKOS_KERNELS_DIR})
 # 
-# set(dem_dependencies ${dem_dependencies} Kokkos::kokkoskernels)
+# set(amdem_dependencies ${amdem_dependencies} Kokkos::kokkoskernels)
 
 
 #------------------------------------------------------------------------------
@@ -106,12 +106,12 @@ find_package(fmt REQUIRED
              NO_DEFAULT_PATH
              PATHS ${FMT_DIR})
 
-set(dem_dependencies ${dem_dependencies} fmt::fmt)
+set(amdem_dependencies ${amdem_dependencies} fmt::fmt)
 
 #------------------------------------------------------------------------------
 # Include the header only CLI11 library
 #------------------------------------------------------------------------------
-set(dem_include_dirs ${dem_include_dirs} "${CMAKE_CURRENT_LIST_DIR}/TPLs/CLI11")
+set(amdem_include_dirs ${amdem_include_dirs} "${CMAKE_CURRENT_LIST_DIR}/TPLs/CLI11")
 
 ##------------------------------------------------------------------------------
 ## Set up target and build commands
@@ -133,22 +133,22 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 add_subdirectory(src)
 
 # add library and exe (which just has main then links to the lib)
-blt_add_library(NAME       dem-lib
-                SOURCES    ${DEM-LIB_SOURCE_FILES}
-                HEADERS    ${DEM-LIB_HEADER_FILES}
-                INCLUDES   ${dem_include_dirs}
-                DEFINES    ${dem_defines}
-                DEPENDS_ON ${dem_dependencies})
+blt_add_library(NAME       AMDEM-lib
+                SOURCES    ${amdem-lib_source_files}
+                HEADERS    ${amdem-lib_header_files}
+                INCLUDES   ${amdem_include_dirs}
+                DEFINES    ${amdem_defines}
+                DEPENDS_ON ${amdem_dependencies})
 
-blt_add_executable(NAME       dem
-                   SOURCES    ${DEM-EXE_SOURCE_FILES}
-                   INCLUDES   ${dem_include_dirs}
-                   DEFINES    ${dem_defines}
-                   DEPENDS_ON ${dem_dependencies} dem-lib)
+blt_add_executable(NAME       AMDEM
+                   SOURCES    ${amdem-exe_source_files}
+                   INCLUDES   ${amdem_include_dirs}
+                   DEFINES    ${amdem_defines}
+                   DEPENDS_ON ${amdem_dependencies} AMDEM-lib)
 
 # the next line ensures -std=c++xx instead of -std=g++xx
-set_target_properties(dem PROPERTIES CXX_EXTENSIONS OFF)
-set_target_properties(dem-lib PROPERTIES CXX_EXTENSIONS OFF)
+set_target_properties(AMDEM PROPERTIES CXX_EXTENSIONS OFF)
+set_target_properties(AMDEM-lib PROPERTIES CXX_EXTENSIONS OFF)
 
 
 ##------------------------------------------------------------------------------
@@ -157,8 +157,8 @@ set_target_properties(dem-lib PROPERTIES CXX_EXTENSIONS OFF)
 if (ENABLE_TESTS)   # on by default with BLT
 
 #    add_subdirectory(tests)
-#    set(testing_dependencies dem-lib gtest)
-#    set(test_include_dirs ${dem_include_dirs} tests src)
+#    set(testing_dependencies AMDEM-lib gtest)
+#    set(test_include_dirs ${amdem_include_dirs} tests src)
 #
 #    # 1. test_mesh
 #    blt_add_executable(NAME       test_mesh
