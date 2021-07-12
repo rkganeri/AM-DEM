@@ -31,8 +31,7 @@ int main(int argc, char *argv[]) {
     bool verbose = false;
     app.add_flag("-v, --verbose", verbose, "Enable verbose mode");
 
-    // TODO: set up input deck parsing (maybe yaml input decks), but not too many parameters
-    // so easy enough to just pass through as arguments for now
+    // TODO: set up input deck parsing (maybe yaml input decks) and re-configure global settings class
 
     // macro defined in CLI11.hpp, see CLI11 Readme docs
     CLI11_PARSE(app, argc, argv);
@@ -47,11 +46,15 @@ int main(int argc, char *argv[]) {
     // initialize Kokkos
     Kokkos::initialize(argc, argv);
 
-    // create our global settings object
-    amdem::GlobalSettings global_settings(num_particles,mean_rad,stdev_rad);
-    
+    // create our global settings singleton object
+    const amdem::GlobalSettings global_settings = 
+        amdem::GlobalSettings::getInstance(num_particles,mean_rad,stdev_rad);
 
+    // wrap the particles object in a unique pointer to ensure we don't accidentally
+    // make copies, as this object contains most of the data we use in the DEM calcs
+    auto particles = std::make_unique<amdem::Particles>(num_particles);
 
+    particles->initLocation(global_settings);
 
 
 
