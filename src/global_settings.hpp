@@ -11,8 +11,20 @@ namespace amdem {
 // We'll do the actual setting of params in the cpp file so if we change settings only that file must
 // be re-compiled.  If actual input deck parsing is added down the line we may re-visit this.
 class GlobalSettings {
-    // N.B. while presumably only 1 instance of Global setting will ever exist, it seems unnecessary
-    // to enforce this to be a singleton class so I won't do that at this time.
+    // N.B. we make this a singleton class (for now) as it stores most of the global settings used
+    // throughout the calculations and we don't want to accidentally allow a copy or alteration of it
+    // (singleton probably unnecessary, but fun to try out ... )
+    private:
+        // make the constructor private and delete the default one
+        GlobalSettings() = delete;
+        GlobalSettings(const int num_particles, const int mean_rad, const int stdev_rad);
+        // delete copy operator
+        GlobalSettings(GlobalSettings& ) = delete;
+        GlobalSettings& operator=(GlobalSettings& ) = delete;
+        // delete move operator
+        GlobalSettings(GlobalSettings&& ) = delete;
+        GlobalSettings& operator=(GlobalSettings&& ) = delete;
+    
     public:
         // domain dimensions
         const double length_;
@@ -37,7 +49,8 @@ class GlobalSettings {
         const double youngs_mod_;
 
         // declare constructor
-        GlobalSettings(const int num_particles, const int mean_rad, const int stdev_rad);
+        static GlobalSettings& getInstance(const int num_particles, const int mean_rad, 
+                                           const int stdev_rad) const;
 };
 
 } // namespace amdem
