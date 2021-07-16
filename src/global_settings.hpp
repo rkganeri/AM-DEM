@@ -50,7 +50,7 @@ class GlobalSettings {
 
         // declare constructor
         static GlobalSettings& getInstance(const int num_particles, const int mean_rad, 
-                                           const int stdev_rad) const;
+                                           const int stdev_rad);
 };
 
 } // namespace amdem

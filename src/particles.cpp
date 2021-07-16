@@ -11,6 +11,7 @@
 
 #include "particles.hpp"
 #include "utilities.hpp"
+#include "io_utils.hpp"
 
 namespace amdem {
 
@@ -22,7 +23,7 @@ Particles::Particles(const int num_particles)
       vn_("vn",num_particles),  // (num_particles,3)
       vnp1_("vnp1",num_particles),  // (num_particles,3)
       coordsn_("coordsn",num_particles),  // (num_particles,3)
-      coordsnp1_("coordsnp1",num_particles),  // (num_particles,3)
+      coordsnp1_("coordsnp1",num_particles)  // (num_particles,3)
 {   }  
 
 
@@ -53,7 +54,7 @@ void Particles::init(GlobalSettings& global_settings) {
     std::default_random_engine generator;
     generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
     std::normal_distribution<double> normal_distribution(mean_rad, stdev_rad);
-    std::uniform_distribition<double> uniform_distribution(0.0, 1.0);   // between 0 and 1, we'll scale this later
+    std::uniform_real_distribution<double> uniform_distribution(0.0, 1.0);   // between 0 and 1, we'll scale this later
     for (int i=0; i<num_particles_; i++) {
         double rad = normal_distribution(generator);
         // min and max are bounded
@@ -78,21 +79,21 @@ void Particles::init(GlobalSettings& global_settings) {
     while (i > -1) {
         j = i+1;
         while (j < num_particles_) {
-            xd = h_coords(i,0) - h_coords(j,0);
-            yd = h_coords(i,1) - h_coords(j,1);
-            zd = h_coords(i,2) - h_coords(j,2);
+            xd = h_coordsn(i,0) - h_coordsn(j,0);
+            yd = h_coordsn(i,1) - h_coordsn(j,1);
+            zd = h_coordsn(i,2) - h_coordsn(j,2);
             dist = sqrt(pow(xd,2.) + pow(yd,2.) + pow(zd,2.));
             // test subview method
-            auto a = Kokkos::subview(i,Kokkos::ALL);
-            auto b = Kokkos::subview(j,Kokkos::ALL);
+            auto a = Kokkos::subview(h_coordsn,i,Kokkos::ALL);
+            auto b = Kokkos::subview(h_coordsn,j,Kokkos::ALL);
             // hmm technically these views should be LayoutLeft for the CPU, meaning that the subview
             // is not contiguos in memory... thus will a.data() return the wrong points??? let's find out...
             double dist2 = utilities::diffNorm(a.data(), b.data());
-            amdem::printMessage(fmt::format("For (i,j) pair: ({},{}); dist = {}", i, j, dist)
-            amdem::printMessage(fmt::format("For (i,j) pair: ({},{}); dist2 = {}", i, j, dist2)
+            amdem::printMessage(fmt::format("For (i,j) pair: ({},{}); dist = {}", i, j, dist));
+            amdem::printMessage(fmt::format("For (i,j) pair: ({},{}); dist2 = {}", i, j, dist2));
 
             // re-generate center coord if the particles overlap and reset j index as we need to check all again
-            if (dist < (h_radius(i)+h_radius(j)) {
+            if (dist < (h_radius(i)+h_radius(j))) {
                 h_coordsn(i,0) = h_radius(i) + (length-2*h_radius(i))*uniform_distribution(generator);
                 h_coordsn(i,1) = h_radius(i) + (width-2*h_radius(i))*uniform_distribution(generator);
                 h_coordsn(i,2) = height - h_radius(i) - 1.0/3.0*height*uniform_distribution(generator);
@@ -144,7 +145,8 @@ void Particles::init(GlobalSettings& global_settings) {
 
 }
 
-void Particles::reBin() {
+void Particles::setBins() {
+    
 
 }
 

@@ -30,7 +30,7 @@ GlobalSettings::GlobalSettings(const int num_particles, const int mean_rad, cons
 
 // our static method to actually instantiate this singleton object
 GlobalSettings& GlobalSettings::getInstance(const int num_particles, const int mean_rad, 
-                                            const int stdev_rad) const {
+                                            const int stdev_rad) {
     static GlobalSettings* global_settings = new GlobalSettings(num_particles, mean_rad, stdev_rad);
     return *global_settings;
 }

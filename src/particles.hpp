@@ -35,8 +35,8 @@ class Particles {
 
         void init(GlobalSettings& global_settings);
 
-        void reBin();
-}
+        void setBins();
+};
 
 } // namespace amdem
 

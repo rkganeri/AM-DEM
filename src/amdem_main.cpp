@@ -10,6 +10,7 @@
 #include "io_utils.hpp"
 #include "terminate.hpp"
 #include "global_settings.hpp"
+#include "particles.hpp"
 
 int main(int argc, char *argv[]) {
 
@@ -47,14 +48,13 @@ int main(int argc, char *argv[]) {
     Kokkos::initialize(argc, argv);
 
     // create our global settings singleton object
-    const amdem::GlobalSettings global_settings = 
-        amdem::GlobalSettings::getInstance(num_particles,mean_rad,stdev_rad);
+    amdem::GlobalSettings& global_settings = amdem::GlobalSettings::getInstance(num_particles,mean_rad,stdev_rad);
 
     // wrap the particles object in a unique pointer to ensure we don't accidentally
     // make copies, as this object contains most of the data we use in the DEM calcs
     auto particles = std::make_unique<amdem::Particles>(num_particles);
 
-    particles->initLocation(global_settings);
+    particles->init(global_settings);
 
 
 
