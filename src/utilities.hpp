@@ -1,7 +1,8 @@
 #ifndef AMDEM_UTILITIES_HPP
 #define AMDEM_UTILITIES_HPP
 
-#include <cstdlib>   
+#include <cstdlib>  
+#include <cmath> 
 
 #include "Kokkos_Core.hpp"
 #include "Kokkos_Random.hpp"
@@ -9,6 +10,25 @@
 namespace amdem {
 
 namespace utilities {
+
+// declare an inline host or device function to calculate the norm of the difference
+// between 2 vectors
+KOKKOS_INLINE_FUNCTION double diffNorm(double* a, double* b, int len=3) {
+    double val = 0.0;
+    for (int i=0; i<len; i++) {
+        val += pow(a[i]-b[i], 2.0);
+    }
+    return sqrt(val);
+}
+    
+
+
+
+            xd = h_coords(i,0) - h_coords(j,0);
+            yd = h_coords(i,1) - h_coords(j,1);
+            zd = h_coords(i,2) - h_coords(j,2);
+            dist = sqrt(pow(xd,2.) + pow(yd,2.) + pow(zd,2.));
+    
 
 
 // A Functor for generating uint64_t random numbers templated on the

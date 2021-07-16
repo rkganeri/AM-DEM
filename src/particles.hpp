@@ -33,7 +33,9 @@ class Particles {
         Particles(const int num_particles);
         Particles() = delete;
 
-        void initLocation(GlobalSettings global_settings);
+        void init(GlobalSettings& global_settings);
+
+        void reBin();
 }
 
 } // namespace amdem

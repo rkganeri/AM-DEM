@@ -7,6 +7,7 @@
 
 #include "Kokkos_Core.hpp"
 #include "Kokkos_Random.hpp"
+#include "fmt/core.h"
 
 #include "particles.hpp"
 #include "utilities.hpp"
@@ -24,13 +25,8 @@ Particles::Particles(const int num_particles)
       coordsnp1_("coordsnp1",num_particles),  // (num_particles,3)
 {   }  
 
-// our static method to actually instantiate this singleton-esque object
-Particles& Particles::GetInstance(const int num_particles) {
-    static Particles* particles = new Particles(num_particles);
-    return *particles;
-}
 
-void Particles::initLocation(GlobalSettings global_settings) {
+void Particles::init(GlobalSettings& global_settings) {
 
     // unpack local vars
     const double length = global_settings.length_;
@@ -86,6 +82,15 @@ void Particles::initLocation(GlobalSettings global_settings) {
             yd = h_coords(i,1) - h_coords(j,1);
             zd = h_coords(i,2) - h_coords(j,2);
             dist = sqrt(pow(xd,2.) + pow(yd,2.) + pow(zd,2.));
+            // test subview method
+            auto a = Kokkos::subview(i,Kokkos::ALL);
+            auto b = Kokkos::subview(j,Kokkos::ALL);
+            // hmm technically these views should be LayoutLeft for the CPU, meaning that the subview
+            // is not contiguos in memory... thus will a.data() return the wrong points??? let's find out...
+            double dist2 = utilities::diffNorm(a.data(), b.data());
+            amdem::printMessage(fmt::format("For (i,j) pair: ({},{}); dist = {}", i, j, dist)
+            amdem::printMessage(fmt::format("For (i,j) pair: ({},{}); dist2 = {}", i, j, dist2)
+
             // re-generate center coord if the particles overlap and reset j index as we need to check all again
             if (dist < (h_radius(i)+h_radius(j)) {
                 h_coordsn(i,0) = h_radius(i) + (length-2*h_radius(i))*uniform_distribution(generator);
@@ -104,6 +109,7 @@ void Particles::initLocation(GlobalSettings global_settings) {
     // no actual deep copy occurs
     Kokkos::deep_copy(radius_, h_radius);
     Kokkos::deep_copy(coordsn_, h_coordsn);
+    Kokkos::deep_copy(coordsnp1_, h_coordsn);
 
     // use our first actual kokkos loops now to calculate the mass and volume and set initial velocity
     // the Kokkos::parallel_for loop construct will default to OpenMP threading if compiled CPU-only
@@ -137,6 +143,11 @@ void Particles::initLocation(GlobalSettings global_settings) {
     */
 
 }
+
+void Particles::reBin() {
+
+}
+
 
 
 
