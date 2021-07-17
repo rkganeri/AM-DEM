@@ -34,3 +34,6 @@
 # Temporary files from vim
 *.swp
 *.swo
+
+# build directories
+build*
