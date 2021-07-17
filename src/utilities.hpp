@@ -3,6 +3,14 @@
 
 #include <cstdlib>  
 #include <cmath> 
+#include <type_traits>
+#include <typeinfo>
+#ifndef _MSC_VER
+#   include <cxxabi.h>
+#endif
+#include <memory>
+#include <string>
+#include <cstdlib>
 
 #include "Kokkos_Core.hpp"
 #include "Kokkos_Random.hpp"
@@ -11,16 +19,47 @@ namespace amdem {
 
 namespace utilities {
 
-// declare an inline host or device function to calculate the norm of the difference
-// between 2 vectors
-KOKKOS_INLINE_FUNCTION double diffNorm(double* a, double* b, int len=3) {
+// this guy is a handy template for printing out some of those weird type when you can't use auto
+// use would be "std::string type = type_name<decltype(var)>();" to see the typename of var
+// taken from https://stackoverflow.com/questions/81870/is-it-possible-to-print-a-variables-type-in-standard-c
+template <class T> std::string type_name()
+{
+    typedef typename std::remove_reference<T>::type TR;
+    std::unique_ptr<char, void(*)(void*)> own
+           (
+#ifndef _MSC_VER
+                abi::__cxa_demangle(typeid(TR).name(), nullptr,
+                                           nullptr, nullptr),
+#else
+                nullptr,
+#endif
+                std::free
+           );
+    std::string r = own != nullptr ? own.get() : typeid(TR).name();
+    if (std::is_const<TR>::value)
+        r += " const";
+    if (std::is_volatile<TR>::value)
+        r += " volatile";
+    if (std::is_lvalue_reference<T>::value)
+        r += "&";
+    else if (std::is_rvalue_reference<T>::value)
+        r += "&&";
+    return r;
+}
+
+// declare an inline host or device function to calculate the 2-norm of a vector 
+// 1st version receives a c-arrays
+KOKKOS_INLINE_FUNCTION double norm2(double* a, int len=3) {
     double val = 0.0;
     for (int i=0; i<len; i++) {
-        val += pow(a[i]-b[i], 2.0);
+        val += pow(a[i], 2.0);
     }
     return sqrt(val);
 }
-    
+// declare a 2nd version in case we pass in components directly (useful when dealing with views)
+KOKKOS_INLINE_FUNCTION double norm2(double a0, double a1, double a2) {
+    return sqrt(pow(a0,2.0) + pow(a1,2.0) + pow(a2,2.0));
+}
 
 // A Functor for generating uint64_t random numbers templated on the
 // GeneratorPool type, see for details

@@ -12,8 +12,8 @@ namespace amdem {
 class Particles {
     // This class stores the force and displacement data for each of the DEM particles.
     // Kokkos views are used to allow for multi-dimensional data access, whereby Kokkos
-    // determines the optimal data layout based upon the compilation settings (e.g. LayoutLeft
-    // for HostSpace or LayoutRight for CudaSpace)
+    // determines the optimal data layout based upon the compilation settings (e.g. LayoutRight
+    // for HostSpace or LayoutLeft for CudaSpace)
 
     public:
         // make the data public so it's easier to access where we need it

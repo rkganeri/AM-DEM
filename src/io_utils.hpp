@@ -7,7 +7,7 @@
 
 namespace amdem {
 
-void printMessage(const std::string& msg);
+void print(const std::string& msg);
 
 } // namespace amdem
 

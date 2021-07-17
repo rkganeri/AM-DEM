@@ -4,6 +4,7 @@ set(amdem-lib_source_files
     ${CMAKE_CURRENT_LIST_DIR}/terminate.cpp
     ${CMAKE_CURRENT_LIST_DIR}/global_settings.cpp
     ${CMAKE_CURRENT_LIST_DIR}/particles.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/bins.cpp
     PARENT_SCOPE
    )
 
@@ -19,6 +20,7 @@ set(amdem-lib_header_files
     ${CMAKE_CURRENT_LIST_DIR}/terminate.hpp
     ${CMAKE_CURRENT_LIST_DIR}/global_settings.hpp
     ${CMAKE_CURRENT_LIST_DIR}/particles.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/bins.hpp
     ${CMAKE_CURRENT_LIST_DIR}/utilities.hpp
     PARENT_SCOPE
    )

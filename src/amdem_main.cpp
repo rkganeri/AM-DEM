@@ -11,6 +11,7 @@
 #include "terminate.hpp"
 #include "global_settings.hpp"
 #include "particles.hpp"
+#include "bins.hpp"
 
 int main(int argc, char *argv[]) {
 
@@ -38,24 +39,34 @@ int main(int argc, char *argv[]) {
     CLI11_PARSE(app, argc, argv);
 
     if (verbose) {
-        amdem::printMessage("Echoing command line inputs: ");
-        amdem::printMessage(fmt::format("   mean radius = {} ",mean_rad));
-        amdem::printMessage(fmt::format("   std. deviation of radius = {} ",stdev_rad));
-        amdem::printMessage(fmt::format("   num_particles = {} ",num_particles));
+        amdem::print("Echoing command line inputs: ");
+        amdem::print(fmt::format("   mean radius = {} ",mean_rad));
+        amdem::print(fmt::format("   std. deviation of radius = {} ",stdev_rad));
+        amdem::print(fmt::format("   num_particles = {} ",num_particles));
     }
 
     // initialize Kokkos
     Kokkos::initialize(argc, argv);
+    
+    // we start initializing Kokkos views in the various routines below and they need to be destroyed 
+    // (handled automaticallly once out of scope) before we terminate so wrapping everything below in braces
+    {
 
-    // create our global settings singleton object
+    // create our global settings singleton object (does it need to be a singleton? prob not, but fun to try it out)
     amdem::GlobalSettings& global_settings = amdem::GlobalSettings::getInstance(num_particles,mean_rad,stdev_rad);
 
     // wrap the particles object in a unique pointer to ensure we don't accidentally
-    // make copies, as this object contains most of the data we use in the DEM calcs
+    // make copies, this object contains most of the data we use in the DEM calcs
     auto particles = std::make_unique<amdem::Particles>(num_particles);
 
     particles->init(global_settings);
 
+    auto bins = std::make_unique<amdem::Bins>(global_settings);
+    amdem::print(fmt::format("Nbx = {}",bins->num_bins_x_));
+    amdem::print(fmt::format("Nby = {}",bins->bins_.extent(1)));
+
+
+    } // end wrapper brace to destroy kokkos views
 
 
     amdem::terminateNormal();

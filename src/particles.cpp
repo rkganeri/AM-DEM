@@ -26,7 +26,6 @@ Particles::Particles(const int num_particles)
       coordsnp1_("coordsnp1",num_particles)  // (num_particles,3)
 {   }  
 
-
 void Particles::init(GlobalSettings& global_settings) {
 
     // unpack local vars
@@ -50,7 +49,7 @@ void Particles::init(GlobalSettings& global_settings) {
     Kokkos::View<double*>::HostMirror h_radius = Kokkos::create_mirror_view(this->radius_);
     Kokkos::View<double**>::HostMirror h_coordsn = Kokkos::create_mirror_view(this->coordsn_);
 
-    // generate random normal distribution for particle raddi
+    // generate random normal distribution for particle radii
     std::default_random_engine generator;
     generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
     std::normal_distribution<double> normal_distribution(mean_rad, stdev_rad);
@@ -75,22 +74,12 @@ void Particles::init(GlobalSettings& global_settings) {
     // this can be expensive as it is an O(n!) check
     int i = num_particles_ - 2;
     int j; 
-    double xd, yd, zd, dist;
+    double dist;
     while (i > -1) {
         j = i+1;
         while (j < num_particles_) {
-            xd = h_coordsn(i,0) - h_coordsn(j,0);
-            yd = h_coordsn(i,1) - h_coordsn(j,1);
-            zd = h_coordsn(i,2) - h_coordsn(j,2);
-            dist = sqrt(pow(xd,2.) + pow(yd,2.) + pow(zd,2.));
-            // test subview method
-            auto a = Kokkos::subview(h_coordsn,i,Kokkos::ALL);
-            auto b = Kokkos::subview(h_coordsn,j,Kokkos::ALL);
-            // hmm technically these views should be LayoutLeft for the CPU, meaning that the subview
-            // is not contiguos in memory... thus will a.data() return the wrong points??? let's find out...
-            double dist2 = utilities::diffNorm(a.data(), b.data());
-            amdem::printMessage(fmt::format("For (i,j) pair: ({},{}); dist = {}", i, j, dist));
-            amdem::printMessage(fmt::format("For (i,j) pair: ({},{}); dist2 = {}", i, j, dist2));
+            dist = utilities::norm2(h_coordsn(i,0)-h_coordsn(j,0), h_coordsn(i,1)-h_coordsn(j,1), 
+                                    h_coordsn(i,2)-h_coordsn(j,2));
 
             // re-generate center coord if the particles overlap and reset j index as we need to check all again
             if (dist < (h_radius(i)+h_radius(j))) {
@@ -107,10 +96,12 @@ void Particles::init(GlobalSettings& global_settings) {
 
     // copy arrays onto device for remainder of calculations (note that fences are included within beginning + end of 
     // deep copy operations, and if we are doing host only memory then only references/pointers are being passed back and forth,
-    // no actual deep copy occurs
+    // no actual deep copy occurs 
     Kokkos::deep_copy(radius_, h_radius);
     Kokkos::deep_copy(coordsn_, h_coordsn);
+    // the below always incurs a deep copy because h_coordsn is not a mirror_view of this->coordsnp1_
     Kokkos::deep_copy(coordsnp1_, h_coordsn);
+
 
     // use our first actual kokkos loops now to calculate the mass and volume and set initial velocity
     // the Kokkos::parallel_for loop construct will default to OpenMP threading if compiled CPU-only
@@ -125,23 +116,6 @@ void Particles::init(GlobalSettings& global_settings) {
         vn_(i,1) = 0.0;
         vn_(i,2) = 0.0;
     });
-
-
-    /*
-    // first task is to generate random numbers. We do this in parallel using
-    // built-in Kokkos helper classes, for details see 
-    // https://github.com/kokkos/kokkos/blob/master/example/tutorial/Algorithms/01_random_numbers/random_numbers.cpp
-    static_cast<uint64_t> rand_seed = time(NULL)
-    Kokkos::Random_XorShift64_Pool<> rand_pool64(rand_seed);
-
-    Kokkos::View<uint64_t*> rand_nums("rand_nums",num_particles_*3);
-
-    // the Kokkos::parallel_for loop construct will default to OpenMP threading if compiled CPU-only
-    // or create a Cuda/HIP device function call (through the GenerateRandom functor) if compiled with Cuda or HIP
-    Kokkos::parallel_for("generate_random_nums_radii",num_particles_,
-                         utilities::GenerateRandom<Kokkos::Random_XorShift64_Pool<> >(
-                         rand_nums, rand_pool64, 3));
-    */
 
 }
 
