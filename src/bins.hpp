@@ -19,15 +19,15 @@ class Bins {
         const int num_bins_z_;
         const int num_particles_;
 
-        Kokkos::View<double*[3]> particle_bin_; // (num_particles,3)
-        Kokkos::View<double***> bins_;          // (num_bins_x,num_bins_y,num_bins_z)
-        Kokkos::View<double*> linked_list_;     // (num_particles)
+        Kokkos::View<int*[3]> particle_bin_; // (num_particles,3)
+        Kokkos::View<int***> bins_;          // (num_bins_x,num_bins_y,num_bins_z)
+        Kokkos::View<int*> linked_list_;     // (num_particles)
 
         // methods - again delete default constructor
         Bins(const GlobalSettings& gs);
         Bins() = delete;
 
-        void setBins(std::unique_ptr<Particles>& particles);
+        void setBins(const Particles& particles, const GlobalSettings& global_settings);
 
 };
 

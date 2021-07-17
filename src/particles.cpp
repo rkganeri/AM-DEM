@@ -26,7 +26,7 @@ Particles::Particles(const int num_particles)
       coordsnp1_("coordsnp1",num_particles)  // (num_particles,3)
 {   }  
 
-void Particles::init(GlobalSettings& global_settings) {
+void Particles::init(GlobalSettings& global_settings, int seed) {
 
     // unpack local vars
     const double length = global_settings.length_;
@@ -51,7 +51,11 @@ void Particles::init(GlobalSettings& global_settings) {
 
     // generate random normal distribution for particle radii
     std::default_random_engine generator;
-    generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
+    if (seed == 0) {
+        generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
+    } else {
+        generator.seed(seed);
+    }
     std::normal_distribution<double> normal_distribution(mean_rad, stdev_rad);
     std::uniform_real_distribution<double> uniform_distribution(0.0, 1.0);   // between 0 and 1, we'll scale this later
     for (int i=0; i<num_particles_; i++) {

@@ -33,7 +33,7 @@ class Particles {
         Particles(const int num_particles);
         Particles() = delete;
 
-        void init(GlobalSettings& global_settings);
+        void init(GlobalSettings& global_settings, int seed=0);
 
         void setBins();
 };
