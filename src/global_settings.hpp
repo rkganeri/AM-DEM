@@ -17,7 +17,7 @@ class GlobalSettings {
     private:
         // make the constructor private and delete the default one
         GlobalSettings() = delete;
-        GlobalSettings(const int num_particles, const int mean_rad, const int stdev_rad);
+        GlobalSettings(const int num_particles, const double mean_rad, const double stdev_rad);
         // delete copy operator
         GlobalSettings(GlobalSettings& ) = delete;
         GlobalSettings& operator=(GlobalSettings& ) = delete;
@@ -36,7 +36,7 @@ class GlobalSettings {
         const double stdev_rad_;
         const double min_rad_;
         const double max_rad_;
-        const double num_particles_;
+        const int num_particles_;
 
         // simulation controls
         const double t_start_;
@@ -49,8 +49,8 @@ class GlobalSettings {
         const double youngs_mod_;
 
         // declare constructor
-        static GlobalSettings& getInstance(const int num_particles, const int mean_rad, 
-                                           const int stdev_rad);
+        static GlobalSettings& getInstance(const int num_particles, const double mean_rad, 
+                                           const double stdev_rad);
 };
 
 } // namespace amdem

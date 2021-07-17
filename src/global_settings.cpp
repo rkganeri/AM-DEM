@@ -11,7 +11,7 @@ namespace amdem {
 // Note that the units are standard SI (m-kg-s)
 // N.B. These settings are consistent with the original Fortran code PowderDepositionKhairallah.F90
 // which was used in the paper https://doi.org/10.1007/s10035-016-0626-0
-GlobalSettings::GlobalSettings(const int num_particles, const int mean_rad, const int stdev_rad) 
+GlobalSettings::GlobalSettings(const int num_particles, const double mean_rad, const double stdev_rad) 
     : length_(0.5e-03),       // m
       width_(1.0e-03),
       height_(3.0e-03),
@@ -29,8 +29,8 @@ GlobalSettings::GlobalSettings(const int num_particles, const int mean_rad, cons
 { /* everything done via initialization */ }
 
 // our static method to actually instantiate this singleton object
-GlobalSettings& GlobalSettings::getInstance(const int num_particles, const int mean_rad, 
-                                            const int stdev_rad) {
+GlobalSettings& GlobalSettings::getInstance(const int num_particles, const double mean_rad, 
+                                            const double stdev_rad) {
     static GlobalSettings* global_settings = new GlobalSettings(num_particles, mean_rad, stdev_rad);
     return *global_settings;
 }

@@ -152,30 +152,20 @@ set_target_properties(amdem-lib PROPERTIES CXX_EXTENSIONS OFF)
 ##------------------------------------------------------------------------------
 if(ENABLE_TESTS) # on by default with BLT
 
-#    add_subdirectory(tests)
-#    set(testing_dependencies amdem-lib gtest)
-#    set(test_include_dirs ${amdem_include_dirs} tests src)
-#
-#    # 1. test_mesh
-#    blt_add_executable(NAME       test_mesh
-#                       SOURCES    ${test_mesh_source_files}
-#                       INCLUDES   ${test_include_dirs}
-#                       DEPENDS_ON ${testing_dependencies})
-#    # experiment to see compiler requirements . . .
-#    # blt_print_target_properties(TARGET test_mesh)
-#
-#    # the command option can be used to pass args to the test exe             
-#    blt_add_test(NAME    test_mesh
-#                 COMMAND test_mesh)
-#
-#
-#    # 2. test_BCs
-#    blt_add_executable(NAME       test_BCs
-#                       SOURCES    ${test_BCs_source_files}
-#                       INCLUDES   ${test_include_dirs}
-#                       DEPENDS_ON ${testing_dependencies})
-#
-#    blt_add_test(NAME    test_BCs
-#                 COMMAND test_BCs)
+    add_subdirectory(tests)
+    set(testing_dependencies amdem-lib gtest)
+    set(test_include_dirs ${amdem_include_dirs} tests src)
+
+    # 1. test_particles
+    blt_add_executable(NAME         test_particles
+                       SOURCES      ${test_particles_source_files}
+                       INCLUDES     ${test_include_dirs}
+                       DEPENDS_ON   ${testing_dependencies})
+    # experiment to see compiler requirements...
+    # blt_print_target_properties(TARGET test_particles)
+
+    # the command option can be used to pass args to the test exe
+    # blt_add_test(NAME test_particles
+    #              COMMAND test_particles)
 
 endif()
