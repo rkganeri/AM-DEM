@@ -62,8 +62,6 @@ int main(int argc, char *argv[]) {
     particles->init(global_settings);
 
     auto bins = std::make_unique<amdem::Bins>(global_settings);
-    amdem::print(fmt::format("Nbx = {}",bins->num_bins_x_));
-    amdem::print(fmt::format("Nby = {}",bins->bins_.extent(1)));
 
 
     } // end wrapper brace to destroy kokkos views
