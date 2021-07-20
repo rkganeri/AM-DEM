@@ -165,7 +165,7 @@ if(ENABLE_TESTS) # on by default with BLT
     # blt_print_target_properties(TARGET test_particles)
 
     # the command option can be used to pass args to the test exe
-    # blt_add_test(NAME test_particles
-    #              COMMAND test_particles)
+    blt_add_test(NAME test_particles
+                 COMMAND test_particles)
 
 endif()
