@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
     // the syntax below looks a bit whacky, but we can't pass in the unique pointer as we perform some routines
     // within kokkos lambdas in the setBins method. The compiler will error out if we try to access data within the particles
     // unique pointer since it can't make a copy of the pointer. Thus we pass a reference to the underlying pointer
-    bins->setBins(*particles.get(), global_settings);
+    bins->setParticleBins(particles, global_settings);
 
 
     } // end wrapper brace to destroy kokkos views

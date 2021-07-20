@@ -16,24 +16,29 @@ Bins::Bins(const GlobalSettings& gs)
       linked_list_("linked_list",num_particles_)
 { /* everything done via initialization */ }
 
-void Bins::setBins(const Particles& particles, const GlobalSettings& gs) {
+void Bins::setParticleBins(const std::unique_ptr<Particles>& particles, 
+                           const GlobalSettings& gs) {
 
     // settings the bins easy to do in parallel
     const double bin_length = gs.length_ / num_bins_x_;
     const double bin_width = gs.width_ / num_bins_y_;
     const double bin_height = gs.height_ / num_bins_z_;
-    // the below could probably be done without the loop collapse, but meh...
+    // we need to create a pointer to the underlying data as we cannot capture a unique pointer
+    // in the kokkos lambda 
+    const Particles* particles_ptr = particles.get();
+
+    // the below could probably be done just as fast without the loop collapse, but meh...
     typedef Kokkos::MDRangePolicy< Kokkos::Rank<2> > mdrange_policy2;    
     Kokkos::parallel_for("set_particle_bins", mdrange_policy2({0,0},{num_particles_,3}), 
         KOKKOS_LAMBDA(int i, int j) {
         // we use the c-style int conversion since we are in a parallel for loop which may need
         // to be compiled with nvcc if using GPUs
         if (j==0) {
-            particle_bin_(i,j) = (int) particles.coordsnp1_(i,j)/bin_length;
+            particle_bin_(i,j) = (int) particles_ptr->coordsnp1_(i,j)/bin_length;
         } else if (j==1) {
-            particle_bin_(i,j) = (int) particles.coordsnp1_(i,j)/bin_width;
+            particle_bin_(i,j) = (int) particles_ptr->coordsnp1_(i,j)/bin_width;
         } else {
-            particle_bin_(i,j) = (int) particles.coordsnp1_(i,j)/bin_height;
+            particle_bin_(i,j) = (int) particles_ptr->coordsnp1_(i,j)/bin_height;
         }
     });
 

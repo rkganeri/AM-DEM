@@ -26,7 +26,7 @@ Particles::Particles(const int num_particles)
       coordsnp1_("coordsnp1",num_particles)  // (num_particles,3)
 {   }  
 
-void Particles::init(GlobalSettings& global_settings, int seed) {
+void Particles::init(const GlobalSettings& global_settings, int seed) {
 
     // unpack local vars
     const double length = global_settings.length_;
@@ -122,12 +122,6 @@ void Particles::init(GlobalSettings& global_settings, int seed) {
     });
 
 }
-
-void Particles::setBins() {
-    
-
-}
-
 
 
 
