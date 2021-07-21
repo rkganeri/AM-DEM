@@ -15,8 +15,8 @@ bool depositPowder(std::unique_ptr<Particles>& particles, std::unique_ptr<Bins>&
                    const GlobalSettings& global_settings) {
 
     // we are using an explicit RK-4 time stepping scheme, so our step size is fixed
-    double current_time = global_settings.start_time_;
-    const double end_time = global_settings.end_time_;
+    double current_time = global_settings.t_start_;
+    const double end_time = global_settings.t_end_;
     const double dt = global_settings.dt_;
     const int num_time_steps = static_cast<int>(ceil((end_time-current_time) / dt));
 
@@ -29,7 +29,7 @@ bool depositPowder(std::unique_ptr<Particles>& particles, std::unique_ptr<Bins>&
 
     }
 
-
+    return true;
 
 }
 

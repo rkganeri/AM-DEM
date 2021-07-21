@@ -12,6 +12,7 @@
 #include "global_settings.hpp"
 #include "particles.hpp"
 #include "bins.hpp"
+#include "deposit_powder.hpp"
 
 int main(int argc, char *argv[]) {
 

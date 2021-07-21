@@ -115,6 +115,35 @@ find_package(fmt REQUIRED
 set(amdem_dependencies ${amdem_dependencies} fmt::fmt)
 
 #------------------------------------------------------------------------------
+# lean-vtk library for writing VTK files
+#------------------------------------------------------------------------------
+if(NOT DEFINED LEAN-VTK_DIR)
+    SET(LEAN-VTK_DIR "${CMAKE_CURRENT_LIST_DIR}/TPLs/lean-vtk/build/lean-vtk_install" CACHE PATH "")
+    SET(LEAN-VTK_LIB_DIR "${LEAN-VTK_DIR}/lib/LeanVTK-1.0" CACHE PATH "")
+endif()
+if(NOT EXISTS ${LEAN-VTK_DIR}/lib/LeanVTK-1.0/LeanVTK-config.cmake)
+    message(FATAL_ERROR "Missing required 'LEAN-VTK_DIR' variable pointing to an installed lean-vtk")
+endif()
+if(NOT DEFINED LEAN-VTK_INCLUDE_DIR)
+    SET(LEAN-VTK_INCLUDE_DIR "${LEAN-VTK_DIR}/include/LeanVTK-1.0" CACHE PATH "")
+endif()
+
+find_library(LEAN-VTK_LIBRARY NAMES LeanVTK
+             PATHS ${LEAN-VTK_LIB_DIR}
+             NO_DEFAULT_PATH
+             NO_CMAKE_ENVIRONMENT_PATH
+             NO_CMAKE_PATH
+             NO_SYSTEM_ENVIRONMENT_PATH
+             NO_CMAKE_SYSTEM_PATH)
+
+blt_import_library(NAME       LeanVTK
+                   INCLUDES   ${LEAN-VTK_INCLUDE_DIR}
+                   LIBRARIES  ${LEAN-VTK_LIBRARY}
+                   EXPORTABLE ON)
+
+set(amdem_dependencies ${amdem_dependencies} LeanVTK)
+
+#------------------------------------------------------------------------------
 # Include the header only CLI11 library
 #------------------------------------------------------------------------------
 set(amdem_include_dirs ${amdem_include_dirs} "${CMAKE_CURRENT_LIST_DIR}/TPLs/CLI11")
