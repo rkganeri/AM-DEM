@@ -64,11 +64,11 @@ int main(int argc, char *argv[]) {
     auto bins = std::make_unique<amdem::Bins>(global_settings);
 
     // TODO: create time stepping loop and set the bins within that
-
-    // the syntax below looks a bit whacky, but we can't pass in the unique pointer as we perform some routines
-    // within kokkos lambdas in the setBins method. The compiler will error out if we try to access data within the particles
-    // unique pointer since it can't make a copy of the pointer. Thus we pass a reference to the underlying pointer
     bins->setParticleBins(particles, global_settings);
+
+    // main function where it all happens
+    bool deposit_successful = amdem::depositPowder(particles, bins, global_settings);
+    if (not deposit_successful) amdem::terminateError("Failure during powder deposition");
 
 
     } // end wrapper brace to destroy kokkos views
