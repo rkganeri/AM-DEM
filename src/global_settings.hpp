@@ -42,6 +42,7 @@ class GlobalSettings {
         const double t_start_ = 0.0; // s
         const double t_end_ = 0.5;
         const double dt_ = 2.0e-08;
+        const double plot_time_freq_ = 1.0e-03;
 
         // material properties
         const double rho_ = 7952.0; // kg/m^3
