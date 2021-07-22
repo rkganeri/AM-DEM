@@ -25,6 +25,10 @@ bool depositPowder(std::unique_ptr<Particles>& particles, std::unique_ptr<Bins>&
     plotState(particles, current_time, 0);
 
     for (int istep=1; istep<=num_time_steps; istep++) {
+        // first update our bins
+        // TODO: only need to do this every N steps based upon particle vel, bin size,
+        // and how far a particle can move in a step
+        bins->setParticleBins(particles, global_settings);
 
 
         // plot results as specified

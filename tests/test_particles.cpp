@@ -13,10 +13,10 @@
 // wrapping in the namespace so I can omit prepending to all classes/functions
 namespace amdem {
 
-// tests Dirichlet BC initialization
+// tests particle initialization
 TEST(particles,init) {
     
-    // initialize Kokkos and Slic (not needed for this test)
+    // initialize Kokkos 
     int argc = 0;
     char **argv = nullptr;
     Kokkos::initialize(argc, argv);
@@ -28,8 +28,8 @@ TEST(particles,init) {
     const double mean_rad = 13.5e-06;
     const double stdev_rad = 4.0e-06;
 
+    // may as well test the global settings initialization here while we're at it
     amdem::GlobalSettings& global_settings = amdem::GlobalSettings::getInstance(num_particles,mean_rad,stdev_rad);
-
     EXPECT_FLOAT_EQ(global_settings.rho_,7952);
     EXPECT_FLOAT_EQ(global_settings.height_,3.0e-03);
     EXPECT_FLOAT_EQ(global_settings.mean_rad_,mean_rad);
@@ -37,13 +37,14 @@ TEST(particles,init) {
     EXPECT_EQ(global_settings.num_particles_,num_particles);
 
     auto particles = std::make_unique<amdem::Particles>(num_particles);
-
     EXPECT_EQ(particles->radius_.extent(0), num_particles);
     EXPECT_EQ(particles->vn_.extent(1), 3);
 
+    // init the particles with a given seed so the resulting radii and positions are deterministic
     int seed = 2371;
     particles->init(global_settings, seed);
 
+    // create host mirrors in case this is performed on the device
     Kokkos::View<double*>::HostMirror h_radius = Kokkos::create_mirror_view(particles->radius_);
     Kokkos::View<double*>::HostMirror h_volume = Kokkos::create_mirror_view(particles->volume_);
     Kokkos::View<double*>::HostMirror h_mass = Kokkos::create_mirror_view(particles->mass_);
@@ -53,17 +54,24 @@ TEST(particles,init) {
     Kokkos::deep_copy(h_mass, particles->mass_);
     Kokkos::deep_copy(h_coordsn, particles->coordsn_);
 
-    double min = DBL_MAX;
-    double max = 0.0;
+    double min_rad = DBL_MAX;
+    double max_rad = 0.0;
+    double min_z = DBL_MAX;
+    double max_z = 0.0;
     for (int i=0; i<num_particles; i++) {
-        if (h_radius(i) < min) min = h_radius(i);
-        if (h_radius(i) > max) max = h_radius(i);
+        if (h_radius(i) < min_rad) min_rad = h_radius(i);
+        if (h_radius(i) > max_rad) max_rad = h_radius(i);
+        if (h_coordsn(i,2) < min_z) min_z = h_coordsn(i,2);
+        if (h_coordsn(i,2) > max_z) max_z = h_coordsn(i,2);
     }
+    // ensure we stay within our set min/max radii
+    EXPECT_FLOAT_EQ(min_rad, global_settings.min_rad_);
+    EXPECT_FLOAT_EQ(max_rad, global_settings.max_rad_);
+    // ensure all particles start in top 1/3rd of box
+    EXPECT_TRUE(min_z < (global_settings.height_*2./3.0));
+    EXPECT_TRUE(max_z < global_settings.height_);
 
-    EXPECT_FLOAT_EQ(min, global_settings.min_rad_);
-    EXPECT_FLOAT_EQ(max, global_settings.max_rad_);
-
-    // since we're seeding the random generator the resulting particle radii and coordinates are deterministic
+    // now check some of the deterministic results 
     EXPECT_FLOAT_EQ(h_radius(13), 1.8209942501009266e-05);
     EXPECT_FLOAT_EQ(h_coordsn(96,0), 0.0003729775063670094);
     EXPECT_FLOAT_EQ(h_coordsn(96,1), 0.00014433068736764189);

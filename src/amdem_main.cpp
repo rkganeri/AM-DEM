@@ -64,9 +64,6 @@ int main(int argc, char *argv[]) {
 
     auto bins = std::make_unique<amdem::Bins>(global_settings);
 
-    // TODO: create time stepping loop and set the bins within that
-    bins->setParticleBins(particles, global_settings);
-
     // main function where it all happens
     bool deposit_successful = amdem::depositPowder(particles, bins, global_settings);
     if (not deposit_successful) amdem::terminateError("Failure during powder deposition");

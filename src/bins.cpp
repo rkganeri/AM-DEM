@@ -34,11 +34,11 @@ void Bins::setParticleBins(const std::unique_ptr<Particles>& particles,
         // we use the c-style int conversion since we are in a parallel for loop which may need
         // to be compiled with nvcc if using GPUs
         if (j==0) {
-            particle_bin_(i,j) = (int) particles_ptr->coordsnp1_(i,j)/bin_length;
+            particle_bin_(i,j) = (int) (particles_ptr->coordsnp1_(i,j)/bin_length);
         } else if (j==1) {
-            particle_bin_(i,j) = (int) particles_ptr->coordsnp1_(i,j)/bin_width;
+            particle_bin_(i,j) = (int) (particles_ptr->coordsnp1_(i,j)/bin_width);
         } else {
-            particle_bin_(i,j) = (int) particles_ptr->coordsnp1_(i,j)/bin_height;
+            particle_bin_(i,j) = (int) (particles_ptr->coordsnp1_(i,j)/bin_height);
         }
     });
 

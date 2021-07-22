@@ -197,4 +197,15 @@ if(ENABLE_TESTS) # on by default with BLT
     blt_add_test(NAME test_particles
                  COMMAND test_particles)
 
+    # 2. test_bins
+    blt_add_executable(NAME         test_bins
+                       SOURCES      ${test_bins_source_files}
+                       INCLUDES     ${test_include_dirs}
+                       DEPENDS_ON   ${testing_dependencies})
+
+    # the command option can be used to pass args to the test exe
+    blt_add_test(NAME test_bins
+                 COMMAND test_bins)
+
+
 endif()
