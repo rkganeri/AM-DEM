@@ -47,26 +47,26 @@ TEST(bins,setParticleBins) {
     EXPECT_EQ(bins->num_bins_z_, 32);
     EXPECT_EQ(bins->num_particles_, num_particles);
 
-    Kokkos::View<double*>::HostMirror h_particle_bin = Kokkos::create_mirror_view(bins->particle_bin_);
-    Kokkos::View<double*>::HostMirror h_bins = Kokkos::create_mirror_view(bins->bins_);
-    Kokkos::View<double*>::HostMirror h_linked_list = Kokkos::create_mirror_view(bins->linked_list_);
-    Kokkos::deep_copy(h_particle_bins, bins->particle_bin_);
+    Kokkos::View<int**>::HostMirror h_particle_bin = Kokkos::create_mirror_view(bins->particle_bin_);
+    Kokkos::View<int***>::HostMirror h_bins = Kokkos::create_mirror_view(bins->bins_);
+    Kokkos::View<int*>::HostMirror h_linked_list = Kokkos::create_mirror_view(bins->linked_list_);
+    Kokkos::deep_copy(h_particle_bin, bins->particle_bin_);
     Kokkos::deep_copy(h_bins, bins->bins_);
     Kokkos::deep_copy(h_linked_list, bins->linked_list_);
 
     // bin_length = length/num_bins_x = (0.5/5) = 0.1 mm
     // bin_width = width/num_bins_y = (1.0/10) = 0.1 mm
     // bin_height = height/num_bins_z = (3.0/32) = 0.09375 mm
-    EXPECT_EQ(h_particle_bins(96,0), 3);
-    EXPECT_EQ(h_particle_bins(96,1), 1);
-    EXPECT_EQ(h_particle_bins(96,2), 29);
+    EXPECT_EQ(h_particle_bin(96,0), 3);
+    EXPECT_EQ(h_particle_bin(96,1), 1);
+    EXPECT_EQ(h_particle_bin(96,2), 29);
 
     // all particles should be in the top 1/3rd of the box at initialization
     int min_zbin = INT_MAX;
     int max_zbin = 0;
     for (int i=0; i<num_particles; i++) {
-        if (h_particle_bins(i,2) < min_zbin) min_zbin = h_particle_bins(i,2);
-        if (h_particle_bins(i,2) > max_zbin) max_zbin = h_particle_bins(i,2);
+        if (h_particle_bin(i,2) < min_zbin) min_zbin = h_particle_bin(i,2);
+        if (h_particle_bin(i,2) > max_zbin) max_zbin = h_particle_bin(i,2);
     }
     EXPECT_EQ(min_zbin, 21);
     EXPECT_EQ(max_zbin, 31);
