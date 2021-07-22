@@ -72,8 +72,14 @@ TEST(bins,setParticleBins) {
     EXPECT_EQ(min_zbin, 21);
     EXPECT_EQ(max_zbin, 31);
 
-    // TODO: test bins_ and linked_list_ arrays
+    // all bins with z-index below 21 should have no particles currently and be set to -1
     EXPECT_EQ(h_bins(3,7,20), -1);
+    EXPECT_EQ(h_bins(2,1,16), -1);
+    EXPECT_EQ(h_bins(1,0,0), -1);
+    EXPECT_EQ(h_bins(4,9,10), -1);
+    EXPECT_EQ(h_bins(0,5,7), -1);
+
+    // TODO: test linked list setup (will require printing out coords and bins)
 
     } // end wrapper to destroy views
     
