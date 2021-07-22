@@ -71,7 +71,7 @@ void Particles::init(const GlobalSettings& global_settings, int seed) {
         // generate starting coords evenly distributed in x/y and within top 1/3rd of box in z
         h_coordsn(i,0) = h_radius(i) + (length-2*h_radius(i))*uniform_distribution(generator);
         h_coordsn(i,1) = h_radius(i) + (width-2*h_radius(i))*uniform_distribution(generator);
-        h_coordsn(i,2) = height - h_radius(i) - 1.0/3.0*height*uniform_distribution(generator);
+        h_coordsn(i,2) = height - h_radius(i) - (1.0/3.0*height-2*h_radius(i))*uniform_distribution(generator);
     }
 
     // now check to see if particles overlap, if so we need to generate a new coordinate.
@@ -89,7 +89,7 @@ void Particles::init(const GlobalSettings& global_settings, int seed) {
             if (dist < (h_radius(i)+h_radius(j))) {
                 h_coordsn(i,0) = h_radius(i) + (length-2*h_radius(i))*uniform_distribution(generator);
                 h_coordsn(i,1) = h_radius(i) + (width-2*h_radius(i))*uniform_distribution(generator);
-                h_coordsn(i,2) = height - h_radius(i) - 1.0/3.0*height*uniform_distribution(generator);
+                h_coordsn(i,2) = height - h_radius(i) - (1.0/3.0*height-2*h_radius(i))*uniform_distribution(generator);
                 j = i+1;
             } else {
                 j+=1;

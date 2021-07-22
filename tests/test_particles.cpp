@@ -68,14 +68,14 @@ TEST(particles,init) {
     EXPECT_FLOAT_EQ(min_rad, global_settings.min_rad_);
     EXPECT_FLOAT_EQ(max_rad, global_settings.max_rad_);
     // ensure all particles start in top 1/3rd of box
-    EXPECT_TRUE(min_z < (global_settings.height_*2./3.0));
-    EXPECT_TRUE(max_z < global_settings.height_);
+    EXPECT_TRUE(min_z > (global_settings.height_*2./3.0+global_settings.min_rad_));
+    EXPECT_TRUE(max_z < (global_settings.height_-global_settings.min_rad_));
 
     // now check some of the deterministic results 
     EXPECT_FLOAT_EQ(h_radius(13), 1.8209942501009266e-05);
     EXPECT_FLOAT_EQ(h_coordsn(96,0), 0.0003729775063670094);
     EXPECT_FLOAT_EQ(h_coordsn(96,1), 0.00014433068736764189);
-    EXPECT_FLOAT_EQ(h_coordsn(96,2), 0.002754950915304241);
+    EXPECT_FLOAT_EQ(h_coordsn(96,2), 0.0027633519);
 
     EXPECT_FLOAT_EQ(h_volume(13), 2.529381471E-14);
     EXPECT_FLOAT_EQ(h_mass(13), 2.529381471E-14*7952);
