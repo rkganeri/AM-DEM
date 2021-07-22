@@ -37,6 +37,7 @@ TEST(bins,setParticleBins) {
     particles->init(global_settings, seed);
 
     auto bins = std::make_unique<amdem::Bins>(global_settings);
+    bins->init();
     bins->setParticleBins(particles, global_settings);
 
     // num_bins_x = int(length/(4*max_rad)) = int(0.5/(4*23e-03)) = 5
@@ -72,6 +73,8 @@ TEST(bins,setParticleBins) {
     EXPECT_EQ(max_zbin, 31);
 
     // TODO: test bins_ and linked_list_ arrays
+    EXPECT_EQ(h_bins(3,7,20), -1);
+
     } // end wrapper to destroy views
     
     // finalize

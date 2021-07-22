@@ -16,6 +16,21 @@ Bins::Bins(const GlobalSettings& gs)
       linked_list_("linked_list",num_particles_)
 { /* everything done via initialization */ }
 
+void Bins::init() {
+    // Kokkos views are initialized to 0 by default but we really need to set the bins_
+    // and linked_list_ arrays to -1
+    Kokkos::parallel_for("init_linked_list", num_particles_, KOKKOS_LAMBDA(int i) {
+        linked_list_(i) = -1;
+    });
+
+    typedef Kokkos::MDRangePolicy<Kokkos::Rank<3>> mdrange_policy3;
+    Kokkos::parallel_for("init_bins", mdrange_policy3({0,0,0},{num_bins_x_,num_bins_y_,num_bins_z_}), 
+            KOKKOS_LAMBDA(int i, int j, int k) {
+        bins_(i,j,k) = -1;
+    });
+}
+
+
 void Bins::setParticleBins(const std::unique_ptr<Particles>& particles, 
                            const GlobalSettings& gs) {
 
@@ -28,19 +43,14 @@ void Bins::setParticleBins(const std::unique_ptr<Particles>& particles,
     const Particles* particles_ptr = particles.get();
 
     // the below could probably be done just as fast without the loop collapse, but meh...
-    typedef Kokkos::MDRangePolicy< Kokkos::Rank<2> > mdrange_policy2;    
-    Kokkos::parallel_for("set_particle_bins", mdrange_policy2({0,0},{num_particles_,3}), 
-        KOKKOS_LAMBDA(int i, int j) {
+    Kokkos::parallel_for("set_particle_bins", num_particles_, KOKKOS_LAMBDA(int i) {
         // we use the c-style int conversion since we are in a parallel for loop which may need
         // to be compiled with nvcc if using GPUs
-        if (j==0) {
-            particle_bin_(i,j) = (int) (particles_ptr->coordsnp1_(i,j)/bin_length);
-        } else if (j==1) {
-            particle_bin_(i,j) = (int) (particles_ptr->coordsnp1_(i,j)/bin_width);
-        } else {
-            particle_bin_(i,j) = (int) (particles_ptr->coordsnp1_(i,j)/bin_height);
-        }
+        particle_bin_(i,0) = (int) (particles_ptr->coordsnp1_(i,0)/bin_length);
+        particle_bin_(i,1) = (int) (particles_ptr->coordsnp1_(i,1)/bin_width);
+        particle_bin_(i,2) = (int) (particles_ptr->coordsnp1_(i,2)/bin_height);
     });
+
 
     // ok so to create the linked list we need to do it serially on the CPU. however, as we only
     // loop through num_particles once it's not actually that expensive

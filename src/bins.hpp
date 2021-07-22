@@ -27,6 +27,8 @@ class Bins {
         Bins(const GlobalSettings& gs);
         Bins() = delete;
 
+        void init();
+
         void setParticleBins(const std::unique_ptr<Particles>& particles, 
                              const GlobalSettings& global_settings);
 

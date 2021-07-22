@@ -63,6 +63,7 @@ int main(int argc, char *argv[]) {
     particles->init(global_settings);
 
     auto bins = std::make_unique<amdem::Bins>(global_settings);
+    bins->init();
 
     // main function where it all happens
     bool deposit_successful = amdem::depositPowder(particles, bins, global_settings);
