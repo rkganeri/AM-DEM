@@ -51,9 +51,11 @@ TEST(bins,setParticleBins) {
     Kokkos::View<int**>::HostMirror h_particle_bin = Kokkos::create_mirror_view(bins->particle_bin_);
     Kokkos::View<int***>::HostMirror h_bins = Kokkos::create_mirror_view(bins->bins_);
     Kokkos::View<int*>::HostMirror h_linked_list = Kokkos::create_mirror_view(bins->linked_list_);
+    Kokkos::View<double**>::HostMirror h_coordsn = Kokkos::create_mirror_view(particles->coordsn_);
     Kokkos::deep_copy(h_particle_bin, bins->particle_bin_);
     Kokkos::deep_copy(h_bins, bins->bins_);
     Kokkos::deep_copy(h_linked_list, bins->linked_list_);
+    Kokkos::deep_copy(h_coordsn, particles->coordsn_);
 
     // bin_length = length/num_bins_x = (0.5/5) = 0.1 mm
     // bin_width = width/num_bins_y = (1.0/10) = 0.1 mm
@@ -79,10 +81,47 @@ TEST(bins,setParticleBins) {
     EXPECT_EQ(h_bins(4,9,10), -1);
     EXPECT_EQ(h_bins(0,5,7), -1);
 
-    // TODO: test linked list setup (will require printing out coords and bins)
+    // test linked list setup (will require printing out coords and bins)
+    bool print_flag = false;
+    if (print_flag) {
+        std::string msg;
+        print("\n");
+        for (int i=0; i<num_particles; i++) {
+            msg = fmt::format("Particle {} coords: ({}, {}, {})", i, 
+                               h_coordsn(i,0), h_coordsn(i,1), h_coordsn(i,2));
+            print(msg);
+        }
+        print("\n");
+
+        for (int i=0; i<bins->num_bins_x_; i++) {
+            for (int j=0; j<bins->num_bins_y_; j++) {
+                for (int k=21; k<bins->num_bins_z_; k++) {
+                    if (h_bins(i,j,k) < 0 ) continue;
+                    msg = fmt::format("Bins ({},{},{}) value: {}", i, j, k, h_bins(i,j,k));
+                    print(msg);
+                }
+            }
+        }
+        print("\n");
+
+        for (int i=0; i<num_particles; i++) {
+            msg = fmt::format("Linked list {} value: {}", i, h_linked_list(i)); 
+            print(msg);
+        }
+    }
+
+    EXPECT_EQ(h_bins(3,1,29), 10);
+    EXPECT_EQ(h_linked_list(10), 96);
+    EXPECT_EQ(h_linked_list(96), -1);
+
+    EXPECT_EQ(h_bins(2,4,28), 44);
+    EXPECT_EQ(h_linked_list(44), 93);
+    EXPECT_EQ(h_linked_list(93), -1);
+
+    EXPECT_EQ(h_linked_list(99), -1);
 
     } // end wrapper to destroy views
-    
+
     // finalize
     Kokkos::finalize();
 }
