@@ -47,6 +47,7 @@ template <class T> std::string type_name()
     return r;
 }
 
+
 // declare an inline host or device function to calculate the 2-norm of a vector 
 // 1st version receives a c-arrays
 KOKKOS_INLINE_FUNCTION double norm2(double* a, int len=3) {
@@ -60,6 +61,17 @@ KOKKOS_INLINE_FUNCTION double norm2(double* a, int len=3) {
 KOKKOS_INLINE_FUNCTION double norm2(double a0, double a1, double a2) {
     return sqrt(pow(a0,2.0) + pow(a1,2.0) + pow(a2,2.0));
 }
+
+
+// inline function to calculate the dot product of 2 vectors (takes in c-arrays)
+KOKKOS_INLINE_FUNCTION double dotProduct(double* a, double* b, int len=3) {
+    double val = 0.0;
+    for (int i=0; i<len; i++) {
+        val += a[i]*b[i];
+    }
+    return val;
+}
+
 
 // A Functor for generating uint64_t random numbers templated on the
 // GeneratorPool type, see for details

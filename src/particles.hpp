@@ -15,6 +15,12 @@ class Particles {
     // determines the optimal data layout based upon the compilation settings (e.g. LayoutRight
     // for HostSpace or LayoutLeft for CudaSpace)
 
+    private:
+        // some data used in Hertzian contact calculations
+        double estar_;
+        double zeta_;
+        double mu_fric_;
+
     public:
         // make the data public so it's easier to access where we need it
         const int num_particles_;
@@ -34,6 +40,14 @@ class Particles {
         Particles() = delete;
 
         void init(const GlobalSettings& global_settings, int seed=0);
+
+        // views are treated as pointers so we capture them by value
+        void calcForces(std::unique_ptr<Bins>& bins, const GlobalSettings& global_settings,
+                        const Kokkos::View<double**> coordsn, const Kokkos::View<double**> vn);
+
+        void Particles::calcWallForce(Kokkos::View<double**> psi_con, Kokkos::View<double**> psi_fric, 
+                                      const Kokkos::View<double**> coordsn, const Kokkos::View<double**> vn,
+                                      const double wall_plane, const int n_index, const int n_value);
 
 };
 

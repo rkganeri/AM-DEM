@@ -32,6 +32,13 @@ bool depositPowder(std::unique_ptr<Particles>& particles, std::unique_ptr<Bins>&
         // and how far a particle can move in a step
         bins->setParticleBins(particles, global_settings);
 
+        // We perform an explicit RK-4 time stepping scheme (see Eqn 29 in paper)
+        Kokkos::View<double*[3]> y1_pos("y1_pos",particles->num_particles_);
+        Kokkos::View<double*[3]> y1_vel("y1_vel",particles->num_particles_);
+        Kokkos::deep_copy(y1_pos,particles->coordsn_);
+        Kokkos::deep_copy(y1_vel,particles->vn_);
+        particles->calcForces(bins, global_settings, y1_pos, y1_vel);
+
 
         // plot results as specified
         if (istep % plot_step_freq == 0) plotState(particles, current_time, istep);

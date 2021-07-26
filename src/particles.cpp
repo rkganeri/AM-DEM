@@ -26,6 +26,7 @@ Particles::Particles(const int num_particles)
       coordsnp1_("coordsnp1",num_particles)  // (num_particles,3)
 {   }  
 
+// initialize particle radii and locations (also calculate mass/volume)
 void Particles::init(const GlobalSettings& global_settings, int seed) {
 
     // unpack local vars
@@ -110,7 +111,7 @@ void Particles::init(const GlobalSettings& global_settings, int seed) {
     // use our first actual kokkos loops now to calculate the mass and volume and set initial velocity
     // the Kokkos::parallel_for loop construct will default to OpenMP threading if compiled CPU-only
     // or create a Cuda/HIP device function call (through lambda functions) if compiled with Cuda or HIP.
-    // the lambda defaults to capture by value, which is what we want since Kokkos Views are treated
+    // the KOKKOS_LAMBDA macro captures by value, which is what we want since Kokkos Views are treated
     // as pointers
     double rho = global_settings.rho_;
     Kokkos::parallel_for("calc_mass_vol", num_particles_, KOKKOS_LAMBDA(int i) {
@@ -121,8 +122,96 @@ void Particles::init(const GlobalSettings& global_settings, int seed) {
         vn_(i,2) = 0.0;
     });
 
+    // finally lets set some parameters we use for Hertzian contact (these only need to be calculated once)
+    // we assume all particles and the bounding walls are 316L SS with the same mat props
+    double e = global_settings.youngs_mod_;
+    double nu = global_settings.nu_;
+    estar_ = (e*e) / (e*(1-pow(nu,2.0)) + e*(1-pow(nu,2.0)))
+    zeta_ = 0.1;    // damping coefficient
+    mu_fric = 0.1;  // friction coefficient
+
+
 }
 
+
+// calculate particle-particle and particle-wall forces
+void Particles::calcForces(std::unique_ptr<Bins>& bins, const GlobalSettings& global_settings,
+                           const Kokkos::View<double**> coordsn, const Kokkos::View<double**> vn) {
+    
+    // create separate views for each of the force components
+    Kokkos::View<double*[3]> psi_con("psi_con",num_particles_);
+    Kokkos::View<double*[3]> psi_fric("psi_fric",num_particles_);
+    Kokkos::View<double*[3]> psi_env("psi_env",num_particles_);
+
+    // calculation of some parameters for hertzian contact
+
+
+    // first we calculate the particle-wall contact and frictional forces
+    const double wall_plane = global_settings.height_;
+    const int n_index = 2;  // normal index 
+    const int n_value = 1;  // normal value (e.g. normal = [0, 0, 1])
+    this->calcWallForce(psi_con, psi_fric, wall_coord, n_index, n_value);
+
+
+    // use Stoke's law to calculate drag (eqn 16 in paper)
+    double rho_ar = 1.66;  // [kg/m^3] at NTP (20 C, 1 atm) for argon atmosphere
+    double viscosity_ar = 2.23e-5; // [kg/m-s or Pa-s] at NTP
+    Kokkos::parallel_for("calc_drag", num_particles_, KOKKOS_LAMBDA (int i) {
+        double coef =  -6.0 * M_PI * viscosity_ar * radius_(i);
+        psi_env(i,0) = coef * vn(i,0);
+        psi_env(i,1) = coef * vn(i,1);
+        psi_env(i,2) = coef * vn(i,2);
+    });
+
+
+}
+
+void Particles::calcWallForce(Kokkos::View<double**> psi_con, Kokkos::View<double**> psi_fric, 
+                              const Kokkos::View<double**> coordsn, const Kokkos::View<double**> vn,
+                              const double wall_plane, const int n_index, const int n_value) {
+
+    Kokkos::parallel_for("calc_wall_force", num_particles_, KOKKOS_LAMBDA (int i) {
+        // only calculate force if particle overlaps with the plane of the wall
+        double dist = abs(coordsn(i,n_index) - wall_plane);
+        if (dist >= radius_(i)) continue;
+
+        double[3] normal = {0};
+        normal[n_index] = n_value;
+        double[3] v;
+        v[0] = vn(i,0);
+        v[1] = vn(i,1);
+        v[2] = vn(i,2);
+
+        double delta_wall = abs(dist - radius_(i));
+        double delta_wall_dot = utilities::dotProduct(v, normal, 3);
+        double rstar = radius_(i);
+        double mstar = mass_(i);
+
+        double damp_coef = -2.0*zeta_*sqrt(2.0*estar_*mstar)*pow(rstar*delta_wall,0.25);
+
+        double psi_con_wall[3] = {0};
+        psi_con_wall[n_index] = -4.0/3.0*sqrt(rstar)*estar_*pow(delta_wall,1.5)*normal[n_index]
+                                + damp_coef*delta_wall_dot*normal[n_index];
+
+        psi_con(i,n_index) += psi_con_wall[n_index];
+
+        double[3] v_tan;
+        v_tan[0] = v[0] - utilities::dotProduct(v, normal, 3)*normal[0];
+        v_tan[1] = v[1] - utilities::dotProduct(v, normal, 3)*normal[1];
+        v_tan[2] = v[2] - utilities::dotProduct(v, normal, 3)*normal[2];
+
+        if (utilities::norm2(v_tan,3) > 0.0) {
+            double psi_con_wall_norm = utilities::norm2(psi_con_wall, 3);
+            double v_tan_norm = utilities::norm2(v_tan, 3);
+            tangent[0] = -v_tan[0] / utilities::norm2(v_tan,3);
+            psi_fric(i,0) -= mu_fric_*psi_con_wall_norm*v_tan[0]/v_tan_norm;
+            psi_fric(i,1) -= mu_fric_*psi_con_wall_norm*v_tan[1]/v_tan_norm;
+            psi_fric(i,2) -= mu_fric_*psi_con_wall_norm*v_tan[2]/v_tan_norm;
+        }
+
+    });
+
+}
 
 
 } // namespace amdem
