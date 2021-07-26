@@ -13,7 +13,6 @@
 #include "utilities.hpp"
 #include "io_utils.hpp"
 #include "terminate.hpp"
-#include "bins.hpp"
 
 namespace amdem {
 
@@ -25,7 +24,8 @@ Particles::Particles(const int num_particles)
       vn_("vn",num_particles),  // (num_particles,3)
       vnp1_("vnp1",num_particles),  // (num_particles,3)
       coordsn_("coordsn",num_particles),  // (num_particles,3)
-      coordsnp1_("coordsnp1",num_particles)  // (num_particles,3)
+      coordsnp1_("coordsnp1",num_particles),  // (num_particles,3)
+      psi_tot_("psi_tot",num_particles)  // (num_particles,3)
 {   }  
 
 // initialize particle radii and locations (also calculate mass/volume)
@@ -128,16 +128,17 @@ void Particles::init(const GlobalSettings& global_settings, int seed) {
     // we assume all particles and the bounding walls are 316L SS with the same mat props
     double e = global_settings.youngs_mod_;
     double nu = global_settings.nu_;
-    estar_ = (e*e) / (e*(1-pow(nu,2.0)) + e*(1-pow(nu,2.0)))
+    estar_ = (e*e) / (e*(1-pow(nu,2.0)) + e*(1-pow(nu,2.0)));
     zeta_ = 0.1;    // damping coefficient
-    mu_fric = 0.1;  // friction coefficient
+    mu_fric_ = 0.1;  // friction coefficient
 
 
 }
 
 
 // calculate particle-particle and particle-wall forces
-void Particles::calcForces(std::unique_ptr<Bins>& bins, const GlobalSettings& global_settings,
+//void Particles::calcForces(const std::unique_ptr<Bins>& bins, const GlobalSettings& global_settings,
+void Particles::calcForces(const GlobalSettings& global_settings,
                            const Kokkos::View<double**> coordsn, const Kokkos::View<double**> vn) {
     
     // create separate views for each of the force components
@@ -151,36 +152,36 @@ void Particles::calcForces(std::unique_ptr<Bins>& bins, const GlobalSettings& gl
 
     // 1. calculate the particle-wall contact and frictional forces
     // z-dir, top wall
-    const double wall_plane = global_settings.height_;
-    const int n_index = 2;  // normal index 
-    const int n_value = 1;  // normal value (e.g. normal = [0, 0, 1])
+    double wall_plane = global_settings.height_;
+    int n_index = 2;  // normal index 
+    int n_value = 1;  // normal value (e.g. normal = [0, 0, 1])
     calcWallForce(psi_con, psi_fric, coordsn, vn, wall_plane, n_index, n_value);
     // z-dir, bottom wall
-    const double wall_plane = 0.0;
-    const int n_index = 2;  // normal index 
-    const int n_value = -1;  // normal value (e.g. normal = [0, 0, -1])
+    wall_plane = 0.0;
+    n_index = 2;  
+    n_value = -1;  // normal value (e.g. normal = [0, 0, -1])
     calcWallForce(psi_con, psi_fric, coordsn, vn, wall_plane, n_index, n_value);
 
     // x-dir, right wall
-    const double wall_plane = global_settings.length_;
-    const int n_index = 0;  // normal index 
-    const int n_value = 1;  // normal value (e.g. normal = [1, 0, 0])
+    wall_plane = global_settings.length_;
+    n_index = 0;  // normal index 
+    n_value = 1;  // normal value (e.g. normal = [1, 0, 0])
     calcWallForce(psi_con, psi_fric, coordsn, vn, wall_plane, n_index, n_value);
     // x-dir, left wall
-    const double wall_plane = 0.0;
-    const int n_index = 0;  // normal index 
-    const int n_value = -1;  // normal value (e.g. normal = [-1, 0, 0])
+    wall_plane = 0.0;
+    n_index = 0;  // normal index 
+    n_value = -1;  // normal value (e.g. normal = [-1, 0, 0])
     calcWallForce(psi_con, psi_fric, coordsn, vn, wall_plane, n_index, n_value);
 
     // y-dir, front wall
-    const double wall_plane = global_settings.width_;
-    const int n_index = 1;  // normal index 
-    const int n_value = 1;  // normal value (e.g. normal = [0, 1, 0])
+    wall_plane = global_settings.width_;
+    n_index = 1;  // normal index 
+    n_value = 1;  // normal value (e.g. normal = [0, 1, 0])
     calcWallForce(psi_con, psi_fric, coordsn, vn, wall_plane, n_index, n_value);
     // y-dir, back wall
-    const double wall_plane = 0.0;
-    const int n_index = 1;  // normal index 
-    const int n_value = -1;  // normal value (e.g. normal = [0, -1, 0])
+    wall_plane = 0.0;
+    n_index = 1;  // normal index 
+    n_value = -1;  // normal value (e.g. normal = [0, -1, 0])
     calcWallForce(psi_con, psi_fric, coordsn, vn, wall_plane, n_index, n_value);
 
     // 2. calculate particle-particle contact and frictional forces 
@@ -225,40 +226,40 @@ void Particles::calcWallForce(Kokkos::View<double**> psi_con, Kokkos::View<doubl
     Kokkos::parallel_for("calc_wall_force", num_particles_, KOKKOS_LAMBDA (int i) {
         // only calculate force if particle overlaps with the plane of the wall
         double dist = abs(coordsn(i,n_index) - wall_plane);
-        if (dist >= radius_(i)) continue;
+        if (dist < radius_(i)) {
 
-        double[3] normal = {0};
-        normal[n_index] = n_value;
-        double[3] v;
-        v[0] = vn(i,0);
-        v[1] = vn(i,1);
-        v[2] = vn(i,2);
+            double normal[3] = {0};
+            normal[n_index] = n_value;
+            double v[3];
+            v[0] = vn(i,0);
+            v[1] = vn(i,1);
+            v[2] = vn(i,2);
 
-        double delta_wall = abs(dist - radius_(i));
-        double delta_wall_dot = utilities::dotProduct(v, normal, 3);
-        double rstar = radius_(i);
-        double mstar = mass_(i);
+            double delta_wall = abs(dist - radius_(i));
+            double delta_wall_dot = utilities::dotProduct(v, normal, 3);
+            double rstar = radius_(i);
+            double mstar = mass_(i);
 
-        double damp_coef = -2.0*zeta_*sqrt(2.0*estar_*mstar)*pow(rstar*delta_wall,0.25);
+            double damp_coef = -2.0*zeta_*sqrt(2.0*estar_*mstar)*pow(rstar*delta_wall,0.25);
 
-        double psi_con_wall[3] = {0};
-        psi_con_wall[n_index] = -4.0/3.0*sqrt(rstar)*estar_*pow(delta_wall,1.5)*normal[n_index]
-                                + damp_coef*delta_wall_dot*normal[n_index];
+            double psi_con_wall[3] = {0};
+            psi_con_wall[n_index] = -4.0/3.0*sqrt(rstar)*estar_*pow(delta_wall,1.5)*normal[n_index]
+                                    + damp_coef*delta_wall_dot*normal[n_index];
 
-        psi_con(i,n_index) += psi_con_wall[n_index];
+            psi_con(i,n_index) += psi_con_wall[n_index];
 
-        double[3] v_tan;
-        v_tan[0] = v[0] - utilities::dotProduct(v, normal, 3)*normal[0];
-        v_tan[1] = v[1] - utilities::dotProduct(v, normal, 3)*normal[1];
-        v_tan[2] = v[2] - utilities::dotProduct(v, normal, 3)*normal[2];
+            double v_tan[3];
+            v_tan[0] = v[0] - utilities::dotProduct(v, normal, 3)*normal[0];
+            v_tan[1] = v[1] - utilities::dotProduct(v, normal, 3)*normal[1];
+            v_tan[2] = v[2] - utilities::dotProduct(v, normal, 3)*normal[2];
 
-        if (utilities::norm2(v_tan,3) > 0.0) {
-            double psi_con_wall_norm = utilities::norm2(psi_con_wall, 3);
-            double v_tan_norm = utilities::norm2(v_tan, 3);
-            tangent[0] = -v_tan[0] / utilities::norm2(v_tan,3);
-            psi_fric(i,0) += -mu_fric_*psi_con_wall_norm*v_tan[0]/v_tan_norm;
-            psi_fric(i,1) += -mu_fric_*psi_con_wall_norm*v_tan[1]/v_tan_norm;
-            psi_fric(i,2) += -mu_fric_*psi_con_wall_norm*v_tan[2]/v_tan_norm;
+            if (utilities::norm2(v_tan,3) > 0.0) {
+                double psi_con_wall_norm = utilities::norm2(psi_con_wall, 3);
+                double v_tan_norm = utilities::norm2(v_tan, 3);
+                psi_fric(i,0) += -mu_fric_*psi_con_wall_norm*v_tan[0]/v_tan_norm;
+                psi_fric(i,1) += -mu_fric_*psi_con_wall_norm*v_tan[1]/v_tan_norm;
+                psi_fric(i,2) += -mu_fric_*psi_con_wall_norm*v_tan[2]/v_tan_norm;
+            }
         }
 
     });

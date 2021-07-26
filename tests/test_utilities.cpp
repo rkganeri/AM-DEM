@@ -21,7 +21,7 @@ TEST(utilities,norm2) {
     int size = 4;
     double a[size];
     for (int i=0; i<size; i++) {
-        a[i] = i*2;
+        a[i] = (i+1)*2;
     }
 
     // use default length of 3
@@ -51,8 +51,8 @@ TEST(utilities,dotProduct) {
     double a[size];
     double b[size];
     for (int i=0; i<size; i++) {
-        a[i] = i*2;
-        b[i] = -i*1.5;
+        a[i] = (i+1)*2;
+        b[i] = -(i+1)*1.5;
     }
 
     // use default length of 3
@@ -60,17 +60,17 @@ TEST(utilities,dotProduct) {
     double expected_val = -42;
     EXPECT_FLOAT_EQ(val, expected_val);
 
-    double val = dotProduct(b,a);
+    val = dotProduct(b,a);
     EXPECT_FLOAT_EQ(val, expected_val);
 
     // use full length of 4
     val = dotProduct(a, b, size);
-    expected_val = 90;
+    expected_val = -90;
     EXPECT_FLOAT_EQ(val, expected_val);
 
     // try length of 2 cause why not
     val = dotProduct(b, a, 2);
-    expected_val = 15;
+    expected_val = -15;
     EXPECT_FLOAT_EQ(val, expected_val);
     
 }

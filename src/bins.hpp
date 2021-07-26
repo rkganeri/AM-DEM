@@ -2,11 +2,12 @@
 #define AMDEM_BINS_HPP
 
 #include <string>   
+#include <memory>
 
 #include "Kokkos_Core.hpp"
 
-#include "global_settings.hpp"
 #include "particles.hpp"
+#include "global_settings.hpp"
 
 namespace amdem {
 

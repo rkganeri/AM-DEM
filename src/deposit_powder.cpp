@@ -37,7 +37,8 @@ bool depositPowder(std::unique_ptr<Particles>& particles, std::unique_ptr<Bins>&
         Kokkos::View<double*[3]> y1_vel("y1_vel",particles->num_particles_);
         Kokkos::deep_copy(y1_pos,particles->coordsn_);
         Kokkos::deep_copy(y1_vel,particles->vn_);
-        particles->calcForces(bins, global_settings, y1_pos, y1_vel);
+        //particles->calcForces(bins, global_settings, y1_pos, y1_vel);
+        particles->calcForces(global_settings, y1_pos, y1_vel);
 
 
         // plot results as specified
