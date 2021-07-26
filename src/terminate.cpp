@@ -14,9 +14,9 @@ namespace amdem {
 
         Kokkos::finalize();
 
-        std::cerr << std::endl << std::flush;
-        std::cerr << "ERROR: " << msg << std::endl << std::flush;
-        std::cerr << std::endl << std::flush;
+        std::cout << std::endl << std::flush;
+        std::cout << "ERROR: " << msg << std::endl << std::flush;
+        std::cout << std::endl << std::flush;
 
         exit(EXIT_FAILURE);
     }

@@ -16,7 +16,7 @@ class Particles {
     // for HostSpace or LayoutLeft for CudaSpace)
 
     private:
-        // some data used in Hertzian contact calculations
+        // some data used in Hertzian contact calculations (these get set in init method)
         double estar_;
         double zeta_;
         double mu_fric_;
