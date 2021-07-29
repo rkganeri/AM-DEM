@@ -4,6 +4,7 @@
 #include <random>
 #include <chrono>
 #include <cmath>
+#include <cstdlib>
 
 #include "Kokkos_Core.hpp"
 #include "Kokkos_Random.hpp"
@@ -258,7 +259,7 @@ void Particles::calcWallForce(Kokkos::View<double**> psi_con, Kokkos::View<doubl
     if ((n_index < 0) or (n_index > 2)) {
         terminateError(fmt::format("Normal index must be 0, 1, or 2 in Particles::calcWallForce, current value is {}",n_index));
     }
-    if ((n_value != 1) or (n_value != -1)) {
+    if (abs(n_value) != 1) {
         terminateError(fmt::format("Normal value must be +/- 1 in Particles::calcWallForce, current value is {}",n_value));
     }
 
