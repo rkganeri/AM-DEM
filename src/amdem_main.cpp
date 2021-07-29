@@ -58,15 +58,13 @@ int main(int argc, char *argv[]) {
 
     // wrap the particles object in a unique pointer to ensure we don't accidentally
     // make copies, this object contains most of the data we use in the DEM calcs
-    auto particles = std::make_unique<amdem::Particles>(num_particles);
+    auto particles = std::make_unique<amdem::Particles>(num_particles, global_settings);
 
-    particles->init(global_settings);
-
-    auto bins = std::make_unique<amdem::Bins>(global_settings);
-    bins->init();
+    particles->initParticles(global_settings);
+    particles->initBins();
 
     // main function where it all happens
-    bool deposit_successful = amdem::depositPowder(particles, bins, global_settings);
+    bool deposit_successful = amdem::depositPowder(particles, global_settings);
     if (not deposit_successful) amdem::terminateError("Failure during powder deposition");
 
 

@@ -32,29 +32,28 @@ TEST(bins,setParticleBins) {
     // global settings and particle init already tested in test_particles; here we'll just check binning
     amdem::GlobalSettings& global_settings = amdem::GlobalSettings::getInstance(num_particles,mean_rad,stdev_rad);
 
-    auto particles = std::make_unique<amdem::Particles>(num_particles);
+    auto particles = std::make_unique<amdem::Particles>(num_particles, global_settings);
     int seed = 2371;
-    particles->init(global_settings, seed);
+    particles->initParticles(global_settings, seed);
+    particles->initBins();
 
-    auto bins = std::make_unique<amdem::Bins>(global_settings);
-    bins->init();
-    bins->setParticleBins(particles, global_settings);
+    particles->setParticleBins(global_settings);
 
     // num_bins_x = int(length/(4*max_rad)) = int(0.5/(4*23e-03)) = 5
     // num_bins_x = int(width/(4*max_rad)) = int(1.0/(4*23e-03)) = 10
     // num_bins_x = int(height/(4*max_rad)) = int(3.0/(4*23e-03)) = 32
-    EXPECT_EQ(bins->num_bins_x_, 5);
-    EXPECT_EQ(bins->num_bins_y_, 10);
-    EXPECT_EQ(bins->num_bins_z_, 32);
-    EXPECT_EQ(bins->num_particles_, num_particles);
+    EXPECT_EQ(particles->num_bins_x_, 5);
+    EXPECT_EQ(particles->num_bins_y_, 10);
+    EXPECT_EQ(particles->num_bins_z_, 32);
+    EXPECT_EQ(particles->num_particles_, num_particles);
 
-    Kokkos::View<int**>::HostMirror h_particle_bin = Kokkos::create_mirror_view(bins->particle_bin_);
-    Kokkos::View<int***>::HostMirror h_bins = Kokkos::create_mirror_view(bins->bins_);
-    Kokkos::View<int*>::HostMirror h_linked_list = Kokkos::create_mirror_view(bins->linked_list_);
+    Kokkos::View<int**>::HostMirror h_particle_bin = Kokkos::create_mirror_view(particles->particle_bin_);
+    Kokkos::View<int***>::HostMirror h_bins = Kokkos::create_mirror_view(particles->bins_);
+    Kokkos::View<int*>::HostMirror h_linked_list = Kokkos::create_mirror_view(particles->linked_list_);
     Kokkos::View<double**>::HostMirror h_coordsn = Kokkos::create_mirror_view(particles->coordsn_);
-    Kokkos::deep_copy(h_particle_bin, bins->particle_bin_);
-    Kokkos::deep_copy(h_bins, bins->bins_);
-    Kokkos::deep_copy(h_linked_list, bins->linked_list_);
+    Kokkos::deep_copy(h_particle_bin, particles->particle_bin_);
+    Kokkos::deep_copy(h_bins, particles->bins_);
+    Kokkos::deep_copy(h_linked_list, particles->linked_list_);
     Kokkos::deep_copy(h_coordsn, particles->coordsn_);
 
     // bin_length = length/num_bins_x = (0.5/5) = 0.1 mm
@@ -93,9 +92,9 @@ TEST(bins,setParticleBins) {
         }
         print("\n");
 
-        for (int i=0; i<bins->num_bins_x_; i++) {
-            for (int j=0; j<bins->num_bins_y_; j++) {
-                for (int k=21; k<bins->num_bins_z_; k++) {
+        for (int i=0; i<particles->num_bins_x_; i++) {
+            for (int j=0; j<particles->num_bins_y_; j++) {
+                for (int k=21; k<particles->num_bins_z_; k++) {
                     if (h_bins(i,j,k) < 0 ) continue;
                     msg = fmt::format("Bins ({},{},{}) value: {}", i, j, k, h_bins(i,j,k));
                     print(msg);

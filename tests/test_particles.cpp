@@ -14,7 +14,7 @@
 namespace amdem {
 
 // tests particle initialization
-TEST(particles,init) {
+TEST(particles,initParticles) {
     
     // initialize Kokkos 
     int argc = 0;
@@ -36,13 +36,13 @@ TEST(particles,init) {
     EXPECT_FLOAT_EQ(global_settings.stdev_rad_,stdev_rad);
     EXPECT_EQ(global_settings.num_particles_,num_particles);
 
-    auto particles = std::make_unique<amdem::Particles>(num_particles);
+    auto particles = std::make_unique<amdem::Particles>(num_particles, global_settings);
     EXPECT_EQ(particles->radius_.extent(0), num_particles);
     EXPECT_EQ(particles->vn_.extent(1), 3);
 
     // init the particles with a given seed so the resulting radii and positions are deterministic
     int seed = 2371;
-    particles->init(global_settings, seed);
+    particles->initParticles(global_settings, seed);
 
     // create host mirrors in case this is performed on the device
     Kokkos::View<double*>::HostMirror h_radius = Kokkos::create_mirror_view(particles->radius_);

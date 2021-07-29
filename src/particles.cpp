@@ -16,8 +16,9 @@
 
 namespace amdem {
 
-Particles::Particles(const int num_particles)
-    : num_particles_(num_particles),
+Particles::Particles(const int num_particles, const GlobalSettings& gs)
+    : Bins(gs), // initialize base class
+      num_particles_(num_particles),
       radius_("radius",num_particles),
       mass_("mass",num_particles),
       volume_("volume",num_particles),
@@ -29,7 +30,7 @@ Particles::Particles(const int num_particles)
 {   }  
 
 // initialize particle radii and locations (also calculate mass/volume)
-void Particles::init(const GlobalSettings& global_settings, int seed) {
+void Particles::initParticles(const GlobalSettings& global_settings, int seed) {
 
     // unpack local vars
     const double length = global_settings.length_;
@@ -136,6 +137,44 @@ void Particles::init(const GlobalSettings& global_settings, int seed) {
 }
 
 
+// set the bins based upon particle positions
+void Particles::setParticleBins(const GlobalSettings& gs) {
+
+    // settings the bins easy to do in parallel
+    const double bin_length = gs.length_ / num_bins_x_;
+    const double bin_width = gs.width_ / num_bins_y_;
+    const double bin_height = gs.height_ / num_bins_z_;
+
+    // the below could probably be done just as fast without the loop collapse, but meh...
+    Kokkos::parallel_for("set_particle_bins", num_particles_, KOKKOS_LAMBDA(int i) {
+        // we use the c-style int conversion since we are in a parallel for loop which may need
+        // to be compiled with nvcc if using GPUs
+        particle_bin_(i,0) = (int) (coordsnp1_(i,0)/bin_length);
+        particle_bin_(i,1) = (int) (coordsnp1_(i,1)/bin_width);
+        particle_bin_(i,2) = (int) (coordsnp1_(i,2)/bin_height);
+    });
+
+
+    // ok so to create the linked list we need to do it serially on the CPU. however, as we only
+    // loop through num_particles once it's not actually that expensive
+    Kokkos::View<int**>::HostMirror h_particle_bin = Kokkos::create_mirror_view(particle_bin_);
+    Kokkos::View<int***>::HostMirror h_bins = Kokkos::create_mirror_view(bins_);
+    Kokkos::View<int*>::HostMirror h_linked_list = Kokkos::create_mirror_view(linked_list_);
+    Kokkos::deep_copy(h_particle_bin, particle_bin_);
+
+    // kokkos views are initialized to 0, which is handy for setting the linked list
+    for (int i=num_particles_-1; i>-1; i--) {
+        h_linked_list(i) = h_bins(h_particle_bin(i,0), h_particle_bin(i,1), h_particle_bin(i,2));
+        h_bins(h_particle_bin(i,0), h_particle_bin(i,1), h_particle_bin(i,2)) = i;
+    }
+
+    // copy back to device (if needed) and we're done
+    Kokkos::deep_copy(bins_, h_bins);
+    Kokkos::deep_copy(linked_list_, h_linked_list);
+        
+}
+
+
 // calculate particle-particle and particle-wall forces
 //void Particles::calcForces(const std::unique_ptr<Bins>& bins, const GlobalSettings& global_settings,
 void Particles::calcForces(const GlobalSettings& global_settings,
@@ -209,6 +248,7 @@ void Particles::calcForces(const GlobalSettings& global_settings,
 
 
 }
+
 
 void Particles::calcWallForce(Kokkos::View<double**> psi_con, Kokkos::View<double**> psi_fric, 
                               const Kokkos::View<double**> coordsn, const Kokkos::View<double**> vn,

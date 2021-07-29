@@ -6,7 +6,6 @@
 
 #include "Kokkos_Core.hpp"
 
-#include "particles.hpp"
 #include "global_settings.hpp"
 
 namespace amdem {
@@ -28,10 +27,7 @@ class Bins {
         Bins(const GlobalSettings& gs);
         Bins() = delete;
 
-        void init();
-
-        void setParticleBins(const std::unique_ptr<Particles>& particles, 
-                             const GlobalSettings& global_settings);
+        void initBins();
 
 };
 

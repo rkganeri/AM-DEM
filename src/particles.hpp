@@ -7,10 +7,11 @@
 #include "Kokkos_Core.hpp"
 
 #include "global_settings.hpp"
+#include "bins.hpp"
 
 namespace amdem {
 
-class Particles {
+class Particles: public Bins {
     // This class stores the force and displacement data for each of the DEM particles.
     // Kokkos views are used to allow for multi-dimensional data access, whereby Kokkos
     // determines the optimal data layout based upon the compilation settings (e.g. LayoutRight
@@ -35,14 +36,17 @@ class Particles {
         Kokkos::View<double*[3]> coordsn_;      // position at step n
         Kokkos::View<double*[3]> coordsnp1_;    // position at step np1
 
-        Kokkos::View<double*[3]> psi_tot_;  // particle forces
+        Kokkos::View<double*[3]> psi_tot_;      // particle forces
 
         // Methods below:
         // delete the default constructor
-        Particles(const int num_particles);
+        Particles(const int num_particles, const GlobalSettings& gs);
         Particles() = delete;
 
-        void init(const GlobalSettings& global_settings, int seed=0);
+        void initParticles(const GlobalSettings& global_settings, int seed=0);
+
+        void setParticleBins(const GlobalSettings& global_settings);
+
 
         // views are treated as pointers so we capture them by value
         //void calcForces(const std::unique_ptr<Bins>& bins, const GlobalSettings& global_settings,

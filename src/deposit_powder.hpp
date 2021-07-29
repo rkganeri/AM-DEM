@@ -10,7 +10,7 @@
 
 namespace amdem {
 
-bool depositPowder(std::unique_ptr<Particles>& particles, std::unique_ptr<Bins>& bins,
+bool depositPowder(std::unique_ptr<Particles>& particles,
                    const GlobalSettings& global_settings);
 
 } // namespace amdem

@@ -11,7 +11,7 @@
 
 namespace amdem {
 
-bool depositPowder(std::unique_ptr<Particles>& particles, std::unique_ptr<Bins>& bins,
+bool depositPowder(std::unique_ptr<Particles>& particles, 
                    const GlobalSettings& global_settings) {
 
     // we are using an explicit RK-4 time stepping scheme, so our step size is fixed
@@ -30,7 +30,7 @@ bool depositPowder(std::unique_ptr<Particles>& particles, std::unique_ptr<Bins>&
         // first update our bins
         // TODO: only need to do this every N steps based upon particle vel, bin size,
         // and how far a particle can move in a step
-        bins->setParticleBins(particles, global_settings);
+        particles->setParticleBins(global_settings);
 
         // We perform an explicit RK-4 time stepping scheme (see Eqn 29 in paper)
         Kokkos::View<double*[3]> y1_pos("y1_pos",particles->num_particles_);
