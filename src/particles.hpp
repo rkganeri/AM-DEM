@@ -51,10 +51,10 @@ class Particles: public Bins {
         // views are treated as pointers so we capture them by value
         //void calcForces(const std::unique_ptr<Bins>& bins, const GlobalSettings& global_settings,
         void calcForces(const GlobalSettings& global_settings,
-                        const Kokkos::View<double**> coordsn, const Kokkos::View<double**> vn);
+                        const Kokkos::View<double**> coords, const Kokkos::View<double**> vel);
 
         void calcWallForce(Kokkos::View<double**> psi_con, Kokkos::View<double**> psi_fric, 
-                           const Kokkos::View<double**> coordsn, const Kokkos::View<double**> vn,
+                           const Kokkos::View<double**> coords, const Kokkos::View<double**> vel,
                            const double wall_plane, const int n_index, const int n_value);
 
 };

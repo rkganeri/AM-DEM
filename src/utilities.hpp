@@ -73,6 +73,25 @@ KOKKOS_INLINE_FUNCTION double dotProduct(double* a, double* b, int len=3) {
 }
 
 
+// ugh, so C doesn't come with built in min/max functions so we will define them here for use
+// within Kokkos loops (can't use templates as these must be nvcc compatible)
+KOKKOS_INLINE_FUNCTION int min(int a, int b) {
+    return ( (a < b) ? a : b );
+}
+
+KOKKOS_INLINE_FUNCTION double min(double a, double b) {
+    return ( (a < b) ? a : b );
+}
+
+KOKKOS_INLINE_FUNCTION int max(int a, int b) {
+    return ( (a > b) ? a : b );
+}
+
+KOKKOS_INLINE_FUNCTION double max(double a, double b) {
+    return ( (a > b) ? a : b );
+}
+
+
 // A Functor for generating uint64_t random numbers templated on the
 // GeneratorPool type, see for details
 // https://github.com/kokkos/kokkos/blob/master/example/tutorial/Algorithms/01_random_numbers/random_numbers.cpp

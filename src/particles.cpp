@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
+#include <algorithm>
 
 #include "Kokkos_Core.hpp"
 #include "Kokkos_Random.hpp"
@@ -179,7 +180,7 @@ void Particles::setParticleBins(const GlobalSettings& gs) {
 // calculate particle-particle and particle-wall forces
 //void Particles::calcForces(const std::unique_ptr<Bins>& bins, const GlobalSettings& global_settings,
 void Particles::calcForces(const GlobalSettings& global_settings,
-                           const Kokkos::View<double**> coordsn, const Kokkos::View<double**> vn) {
+                           const Kokkos::View<double**> coords, const Kokkos::View<double**> vel) {
     
     // create separate views for each of the force components
     // N.B. kokkos views automatically get initialized to 0.0, as we desire
@@ -195,37 +196,52 @@ void Particles::calcForces(const GlobalSettings& global_settings,
     double wall_plane = global_settings.height_;
     int n_index = 2;  // normal index 
     int n_value = 1;  // normal value (e.g. normal = [0, 0, 1])
-    calcWallForce(psi_con, psi_fric, coordsn, vn, wall_plane, n_index, n_value);
+    calcWallForce(psi_con, psi_fric, coords, vel, wall_plane, n_index, n_value);
     // z-dir, bottom wall
     wall_plane = 0.0;
     n_index = 2;  
     n_value = -1;  // normal value (e.g. normal = [0, 0, -1])
-    calcWallForce(psi_con, psi_fric, coordsn, vn, wall_plane, n_index, n_value);
+    calcWallForce(psi_con, psi_fric, coords, vel, wall_plane, n_index, n_value);
 
     // x-dir, right wall
     wall_plane = global_settings.length_;
     n_index = 0;  // normal index 
     n_value = 1;  // normal value (e.g. normal = [1, 0, 0])
-    calcWallForce(psi_con, psi_fric, coordsn, vn, wall_plane, n_index, n_value);
+    calcWallForce(psi_con, psi_fric, coords, vel, wall_plane, n_index, n_value);
     // x-dir, left wall
     wall_plane = 0.0;
     n_index = 0;  // normal index 
     n_value = -1;  // normal value (e.g. normal = [-1, 0, 0])
-    calcWallForce(psi_con, psi_fric, coordsn, vn, wall_plane, n_index, n_value);
+    calcWallForce(psi_con, psi_fric, coords, vel, wall_plane, n_index, n_value);
 
     // y-dir, front wall
     wall_plane = global_settings.width_;
     n_index = 1;  // normal index 
     n_value = 1;  // normal value (e.g. normal = [0, 1, 0])
-    calcWallForce(psi_con, psi_fric, coordsn, vn, wall_plane, n_index, n_value);
+    calcWallForce(psi_con, psi_fric, coords, vel, wall_plane, n_index, n_value);
     // y-dir, back wall
     wall_plane = 0.0;
     n_index = 1;  // normal index 
     n_value = -1;  // normal value (e.g. normal = [0, -1, 0])
-    calcWallForce(psi_con, psi_fric, coordsn, vn, wall_plane, n_index, n_value);
+    calcWallForce(psi_con, psi_fric, coords, vel, wall_plane, n_index, n_value);
 
     // 2. calculate particle-particle contact and frictional forces 
     // (eqns 2 - 14 in the paper)
+    Kokkos::parallel_for("calc_part_part_force", num_particles_, KOKKOS_LAMBDA (int i) {
+        // only loop through the neighboring bins when checking for contact
+        int h0 = particle_bin_(i,0);
+        int h1 = particle_bin_(i,1);
+        int h2 = particle_bin_(i,2);
+        // grr, C doesn't have a built-in max/min function so i had to write my own
+        int min_bin0 = utilities::max(h0-1,0);
+        int max_bin0 = utilities::min(h0+2,num_bins_x_);
+        int min_bin1 = utilities::max(h1-1,0);
+        int max_bin1 = utilities::min(h1+2,num_bins_y_);
+        int min_bin2 = utilities::max(h2-1,0);
+        int max_bin2 = utilities::min(h2+2,num_bins_z_);
+
+    });
+
 
 
     // 3.  use Stoke's law to calculate drag (eqn 15 in paper)
@@ -233,9 +249,9 @@ void Particles::calcForces(const GlobalSettings& global_settings,
     const double viscosity_ar = 2.23e-5; // [kg/m-s or Pa-s] at NTP
     Kokkos::parallel_for("calc_drag", num_particles_, KOKKOS_LAMBDA (int i) {
         double coef =  -6.0 * M_PI * viscosity_ar * radius_(i);
-        psi_env(i,0) = coef * vn(i,0);
-        psi_env(i,1) = coef * vn(i,1);
-        psi_env(i,2) = coef * vn(i,2);
+        psi_env(i,0) = coef * vel(i,0);
+        psi_env(i,1) = coef * vel(i,1);
+        psi_env(i,2) = coef * vel(i,2);
     });
 
     // 4. sum up all forces and add gravity contribution (eqns 1, 16 in paper)
@@ -252,7 +268,7 @@ void Particles::calcForces(const GlobalSettings& global_settings,
 
 
 void Particles::calcWallForce(Kokkos::View<double**> psi_con, Kokkos::View<double**> psi_fric, 
-                              const Kokkos::View<double**> coordsn, const Kokkos::View<double**> vn,
+                              const Kokkos::View<double**> coords, const Kokkos::View<double**> vel,
                               const double wall_plane, const int n_index, const int n_value) {
 
     // quick error/sanity checks
@@ -266,15 +282,15 @@ void Particles::calcWallForce(Kokkos::View<double**> psi_con, Kokkos::View<doubl
     // calculate particle-wall interaction forces (eqns 2 - 14 in paper)
     Kokkos::parallel_for("calc_wall_force", num_particles_, KOKKOS_LAMBDA (int i) {
         // only calculate force if particle overlaps with the plane of the wall
-        double dist = abs(coordsn(i,n_index) - wall_plane);
+        double dist = abs(coords(i,n_index) - wall_plane);
         if (dist < radius_(i)) {
 
             double normal[3] = {0};
             normal[n_index] = n_value;
             double v[3];
-            v[0] = vn(i,0);
-            v[1] = vn(i,1);
-            v[2] = vn(i,2);
+            v[0] = vel(i,0);
+            v[1] = vel(i,1);
+            v[2] = vel(i,2);
 
             double delta_wall = abs(dist - radius_(i));
             double delta_wall_dot = utilities::dotProduct(v, normal, 3);

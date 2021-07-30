@@ -75,6 +75,29 @@ TEST(utilities,dotProduct) {
     
 }
 
+// tests the min inline functions
+TEST(utilities,min_max) {
+
+    int a = 3;
+    int b = 2;
+
+    double c = -1.217;
+    double d = -0.76;
+
+    EXPECT_EQ(min(a,b), b);
+    EXPECT_FLOAT_EQ(min(c,d), c);
+
+    EXPECT_EQ(min(7,6), 6);
+    EXPECT_FLOAT_EQ(min(4.708, 9.1), 4.708);
+
+    EXPECT_EQ(max(a,b), a);
+    EXPECT_FLOAT_EQ(max(c,d), d);
+
+    EXPECT_EQ(max(-1,0), 0);
+    EXPECT_FLOAT_EQ(max(3.76,2.12), 3.76);
+    
+}
+
 } // namespace utilities
 
 } // namespace amdem
