@@ -29,16 +29,29 @@ we are able to use either OpenMP or CUDA/HIP (depending on compilation setting) 
 any #ifdef's within the code!
 
 
-Basic Intstructions:
+Basic Compilation Intstructions:
 
 1) This repo utilizes submodules so when cloning the repo be sure to use the command
-```git clone --recurse submodules```
+```
+git clone --recurse-submodules
+```
 
 If you have already cloned the repo, you can add in the submodules via 
 ``` 
 git submodule init
 git submodule update
 ```
+
+2) Build the third party libraries using the scripts provided in TPLs/TPL_build_scripts.
+3) Build the current code using CMake
+
+
+Basic Running Instructions:
+
+Many global parameters are set in the file src/global_settings.hpp.  The easiest place to modify size of bounding volume
+and particle size is within that file.  The only required argument for running the code is the number of particles 
+via the -n flag.  600 particles were used in the 2016 paper.  Plot files are writtin in VTK format, and the results can be visualized
+using an open source vis package such as Visit or Paraview.
 
 Feel free to shoot me a message with any bug reports or suggestions for improvement.
 
