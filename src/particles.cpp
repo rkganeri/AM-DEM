@@ -252,7 +252,7 @@ void Particles::calcForces(const GlobalSettings& global_settings,
                         normal[2] = coords(j,2) - coords(i,2);
                         dist = utilities::norm2(normal, 3);
 
-                        if ( (dist < (radius_(i)+radius_(j))) and (j /= i) ) {
+                        if ( (dist < (radius_(i)+radius_(j))) and (j != i) ) {
                             for (int index=0; index<3; index++) {
                                 // normalize normal vector
                                 normal[index] = normal[index] / dist;
@@ -280,20 +280,20 @@ void Particles::calcForces(const GlobalSettings& global_settings,
                             }
 
                             // apply friction force if there is a difference in the particles' tangential vel
-                            double vel0_mag = utilities::dotProduct(v0, normal, 3);
-                            double vel1_mag = -utilities::dotProduct(v1, normal, 3);
+                            vel0_mag = utilities::dotProduct(v0, normal, 3);
+                            vel1_mag = -utilities::dotProduct(v1, normal, 3);
                             for (int index=0; index<3; index++) {
                                 v_tan0[index] = v0[index] - vel0_mag*normal[index];
                                 v_tan1[index] = v1[index] - vel1_mag*(-normal[index]);
-                                v_diff[index] = v_tan1[index] - v_tan0[index];  // overload this guy
+                                vdiff[index] = v_tan1[index] - v_tan0[index];  // overload this guy
                             }
 
-                            double v_tan_norm = utilities::norm2(v_diff, 3);
+                            double v_tan_norm = utilities::norm2(vdiff, 3);
                             if (v_tan_norm > 0.0) {
                                 double psi_con_norm = utilities::norm2(psi_con_part, 3);
-                                psi_fric(i,0) += mu_fric_*psi_con_norm*v_diff[0] / v_tan_norm;
-                                psi_fric(i,1) += mu_fric_*psi_con_norm*v_diff[1] / v_tan_norm;
-                                psi_fric(i,2) += mu_fric_*psi_con_norm*v_diff[2] / v_tan_norm;
+                                psi_fric(i,0) += mu_fric_*psi_con_norm*vdiff[0] / v_tan_norm;
+                                psi_fric(i,1) += mu_fric_*psi_con_norm*vdiff[1] / v_tan_norm;
+                                psi_fric(i,2) += mu_fric_*psi_con_norm*vdiff[2] / v_tan_norm;
                             }
 
                         }   // end if
@@ -309,8 +309,8 @@ void Particles::calcForces(const GlobalSettings& global_settings,
 
 
     // 3.  use Stoke's law to calculate drag (eqn 15 in paper)
-    const double rho_ar = 1.66;  // [kg/m^3] at NTP (20 C, 1 atm) for argon atmosphere
     const double viscosity_ar = 2.23e-5; // [kg/m-s or Pa-s] at NTP
+    //const double rho_ar = 1.66;  // [kg/m^3] at NTP (20 C, 1 atm) for argon atmosphere
     Kokkos::parallel_for("calc_drag", num_particles_, KOKKOS_LAMBDA (int i) {
         double coef =  -6.0 * M_PI * viscosity_ar * radius_(i);
         psi_env(i,0) = coef * vel(i,0);
