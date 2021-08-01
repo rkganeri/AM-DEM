@@ -30,6 +30,7 @@ bool depositPowder(std::unique_ptr<Particles>& particles,
         // first update our bins
         // TODO: only need to do this every N steps based upon particle vel, bin size,
         // and how far a particle can move in a step
+        particles->initBins();
         particles->setParticleBins(global_settings);
 
         // We perform an explicit RK-4 time stepping scheme (see Eqn 29 in paper)

@@ -164,7 +164,6 @@ void Particles::setParticleBins(const GlobalSettings& gs) {
     Kokkos::View<int*>::HostMirror h_linked_list = Kokkos::create_mirror_view(linked_list_);
     Kokkos::deep_copy(h_particle_bin, particle_bin_);
 
-    // kokkos views are initialized to 0, which is handy for setting the linked list
     for (int i=num_particles_-1; i>-1; i--) {
         h_linked_list(i) = h_bins(h_particle_bin(i,0), h_particle_bin(i,1), h_particle_bin(i,2));
         h_bins(h_particle_bin(i,0), h_particle_bin(i,1), h_particle_bin(i,2)) = i;
