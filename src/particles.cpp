@@ -239,9 +239,73 @@ void Particles::calcForces(const GlobalSettings& global_settings,
         int max_bin1 = utilities::min(h1+2,num_bins_y_);
         int min_bin2 = utilities::max(h2-1,0);
         int max_bin2 = utilities::min(h2+2,num_bins_z_);
+        int j;
+        double normal[3], vdiff[3], psi_con_part[3], v_tan0[3], v_tan1[3], v0[3], v1[3];
+        double dist, rstar, mstar, delta, delta_dot, damp_coef, vel0_mag, vel1_mag;
+        for (int x=min_bin0; x<max_bin0; x++) {
+            for (int y=min_bin1; y<max_bin1; y++) {
+                for (int z=min_bin2; z<max_bin2; z++) {
+                    j = bins_(x,y,z);
+                    while ((j >= 0) and (j < num_particles_)) {
+                        normal[0] = coords(j,0) - coords(i,0);
+                        normal[1] = coords(j,1) - coords(i,1);
+                        normal[2] = coords(j,2) - coords(i,2);
+                        dist = utilities::norm2(normal, 3);
 
+                        if ( (dist < (radius_(i)+radius_(j))) and (j /= i) ) {
+                            for (int index=0; index<3; index++) {
+                                // normalize normal vector
+                                normal[index] = normal[index] / dist;
+                                // calculate velocity difference between particles
+                                vdiff[index] = vel(j,index) - vel(i,index);
+                            }
+
+                            delta = abs(dist - (radius_(i)+radius_(j)));
+                            delta_dot = utilities::dotProduct(vdiff, normal, 3);
+
+                            rstar = radius_(i)*radius_(j) / (radius_(i)+radius_(j));
+                            mstar = mass_(i)*mass_(j) / (mass_(i)+mass_(j));
+
+                            // now calculate the contact force for this particle-pair
+                            damp_coef = 2.0*zeta_*sqrt(2.0*estar_*mstar)*pow(rstar*delta,0.25);
+                            for (int index=0; index<3; index++) {
+                                psi_con_part[index] = -4.0/3.0*sqrt(rstar)*estar_*pow(delta,1.5)*normal[index]
+                                                      + damp_coef*delta_dot*normal[index];
+
+                                psi_con(i,index) += psi_con_part[index];
+                                
+                                // store these velocities for friction calcs
+                                v0[index] = vel(i,index);
+                                v1[index] = vel(j,index);
+                            }
+
+                            // apply friction force if there is a difference in the particles' tangential vel
+                            double vel0_mag = utilities::dotProduct(v0, normal, 3);
+                            double vel1_mag = -utilities::dotProduct(v1, normal, 3);
+                            for (int index=0; index<3; index++) {
+                                v_tan0[index] = v0[index] - vel0_mag*normal[index];
+                                v_tan1[index] = v1[index] - vel1_mag*(-normal[index]);
+                                v_diff[index] = v_tan1[index] - v_tan0[index];  // overload this guy
+                            }
+
+                            double v_tan_norm = utilities::norm2(v_diff, 3);
+                            if (v_tan_norm > 0.0) {
+                                double psi_con_norm = utilities::norm2(psi_con_part, 3);
+                                psi_fric(i,0) += mu_fric_*psi_con_norm*v_diff[0] / v_tan_norm;
+                                psi_fric(i,1) += mu_fric_*psi_con_norm*v_diff[1] / v_tan_norm;
+                                psi_fric(i,2) += mu_fric_*psi_con_norm*v_diff[2] / v_tan_norm;
+                            }
+
+                        }   // end if
+
+                        j = linked_list_(j);    // go to next particle within this bin in linked list
+
+                    }   // end while
+
+                }   // end bin loop
+            }
+        }
     });
-
 
 
     // 3.  use Stoke's law to calculate drag (eqn 15 in paper)
@@ -293,11 +357,11 @@ void Particles::calcWallForce(Kokkos::View<double**> psi_con, Kokkos::View<doubl
             v[2] = vel(i,2);
 
             double delta_wall = abs(dist - radius_(i));
-            double delta_wall_dot = utilities::dotProduct(v, normal, 3);
+            double delta_wall_dot = -1.*utilities::dotProduct(v, normal, 3);
             double rstar = radius_(i);
             double mstar = mass_(i);
 
-            double damp_coef = -2.0*zeta_*sqrt(2.0*estar_*mstar)*pow(rstar*delta_wall,0.25);
+            double damp_coef = 2.0*zeta_*sqrt(2.0*estar_*mstar)*pow(rstar*delta_wall,0.25);
 
             double psi_con_wall[3] = {0};
             psi_con_wall[n_index] = -4.0/3.0*sqrt(rstar)*estar_*pow(delta_wall,1.5)*normal[n_index]
@@ -305,10 +369,12 @@ void Particles::calcWallForce(Kokkos::View<double**> psi_con, Kokkos::View<doubl
 
             psi_con(i,n_index) += psi_con_wall[n_index];
 
+            // apply friction force if there is tengential velocity
             double v_tan[3];
-            v_tan[0] = v[0] - utilities::dotProduct(v, normal, 3)*normal[0];
-            v_tan[1] = v[1] - utilities::dotProduct(v, normal, 3)*normal[1];
-            v_tan[2] = v[2] - utilities::dotProduct(v, normal, 3)*normal[2];
+            double vel_norm_mag = utilities::dotProduct(v, normal, 3);
+            v_tan[0] = v[0] - vel_norm_mag*normal[0];
+            v_tan[1] = v[1] - vel_norm_mag*normal[1];
+            v_tan[2] = v[2] - vel_norm_mag*normal[2];
 
             if (utilities::norm2(v_tan,3) > 0.0) {
                 double psi_con_wall_norm = utilities::norm2(psi_con_wall, 3);
