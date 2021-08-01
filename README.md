@@ -23,7 +23,7 @@ testing these simulations on does not have any compute capable GPUs so all testi
 While I have coded this in a manner such that it should run correctly on GPUs (without unified memory)
 as well, I have not tested that so there's a chance some small bugs are present.
 
-Note that Kokkos automatically optimizes memory usage for multi-dimensional arrays based upon the compilation
+Note that Kokkos automatically optimizes memory usage for multi-dimensional arrays (views) based upon the compilation
 configuration (e.g. LayoutRight memory for CPU-only or LayoutLeft for GPUs).  Additionally, using Kokkos
 we are able to use either OpenMP or CUDA/HIP (depending on compilation setting) without the need for
 any #ifdef's within the code!
