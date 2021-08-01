@@ -18,7 +18,7 @@ The old code is contained in the original\_code folder, which was used to produc
 The new code within src was re-written in C++ and is capable of running on GPUs via the Kokkos offloading
 library.  If Kokkos and this code are compiled with either CUDA or HIP the calculations can be performed
 on either Nvidia or AMD GPUs, respectively.  However, if only CPUs are available when compiling, 
-Kokkos still provides parallelism via OpenMP threading.  Note that my 2011 MB Pro laptop I've been running/
+Kokkos still provides parallelism via OpenMP threading.  Note that my 2011 Macbook Pro laptop I've been running/
 testing these simulations on does not have any compute capable GPUs so all testing has been CPU-only. 
 While I have coded this in a manner such that it should run correctly on GPUs (without unified memory)
 as well, I have not tested that so there's a chance some small bugs are present.
