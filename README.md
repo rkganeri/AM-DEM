@@ -35,8 +35,10 @@ Basic Intstructions:
 ```git clone --recurse submodules```
 
 If you have already cloned the repo, you can add in the submodules via 
-``` git submodule init
-git submodule update ```
+``` 
+git submodule init
+git submodule update
+```
 
 Feel free to shoot me a message with any bug reports or suggestions for improvement.
 
