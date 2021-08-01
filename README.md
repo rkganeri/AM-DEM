@@ -28,5 +28,15 @@ configuration (e.g. LayoutRight memory for CPU-only or LayoutLeft for GPUs).  Ad
 we are able to use either OpenMP or CUDA/HIP (depending on compilation setting) without the need for
 any #ifdef's within the code!
 
+
+Basic Intstructions:
+
+1) This repo utilizes submodules so when cloning the repo be sure to use the command
+```git clone --recurse submodules```
+
+If you have already cloned the repo, you can add in the submodules via 
+``` git submodule init
+git submodule update ```
+
 Feel free to shoot me a message with any bug reports or suggestions for improvement.
 
