@@ -1,4 +1,4 @@
-program PowderDepositionKhairallah
+program PowderDeposition
 use RDistributions
 implicit none
 
@@ -392,7 +392,7 @@ end do
 close(unit=100)
 close(unit=200)
 
-end program PowderDepositionKhairallah
+end program PowderDeposition
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

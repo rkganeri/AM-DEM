@@ -5,10 +5,10 @@ compile2:
 	ifort RDistributions.f90 LaserSinterParameterSiemens.f90 -o LaserSinterParameterSiemens -check all -warn all
 
 compile3:
-	ifort RDistributions.f90 PowderDepositionKhairallah.f90 -o PowderDepositionKhairallah -fast
+	ifort RDistributions.f90 PowderDeposition.f90 -o PowderDeposition -fast
 
 compile4:
-	ifort RDistributions.f90 PowderDepositionShankarFast.f90 -o PowderDepositionShankarFast -fast
+	ifort RDistributions.f90 PowderDepositionFast.f90 -o PowderDepositionFast -fast
 
 compile5:
 	ifort Porosity.f90 -o Porosity -fast
@@ -23,16 +23,16 @@ compile8:
 	ifort RDistributions.f90 PowderDepositionLaserFlash.f90 -o PowderDepositionLaserFlash -fast
 
 compile9:
-	ifort MultiSLMShankar.f90 -o MultiSLMShankar -fast
+	ifort MultiSLM.f90 -o MultiSLM -fast
 
 compile10: 
-	ifort SLMShankarFast.f90 -o SLMShankarFast -fast
+	ifort SLMFast.f90 -o SLMSFast -fast
 
 compile11:
-	gfortran SLMShankarFastMP2.f90 -o SLMShankarFast40MP2 -fopenmp -ofast
+	gfortran SLMFastOMP.f90 -o SLMFast0MP -fopenmp -ofast
 
 compile12:
-	ifort RDistributions.f90 PowderDepositionShankarMP.f90 -o PowderDepositionShankarMP -fast -openmp
+	ifort RDistributions.f90 PowderDepositionOMP.f90 -o PowderDepositionOMP -fast -openmp
 
 
 

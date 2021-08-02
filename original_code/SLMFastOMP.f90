@@ -1,4 +1,4 @@
-program SLMShankarFastMP
+program SLMFastOMP
   use omp_lib
   implicit none
 
@@ -781,7 +781,7 @@ program SLMShankarFastMP
 !!$  close(unit=300)
 !!$  close(unit=400)
 
-end program SLMShankarFastMP
+end program SLMFastOMP
 
 
 
