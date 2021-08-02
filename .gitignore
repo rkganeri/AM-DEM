@@ -37,3 +37,6 @@
 
 # build directories
 build*
+
+# Ctags
+tags
