@@ -36,7 +36,6 @@ class Particles: public Bins {
         Kokkos::View<double*[3]> coordsn_;      // position at step n
         Kokkos::View<double*[3]> coordsnp1_;    // position at step np1
 
-        Kokkos::View<double*[3]> psi_tot_;      // particle forces
 
         // Methods below:
         // delete the default constructor
@@ -49,8 +48,7 @@ class Particles: public Bins {
 
 
         // views are treated as pointers so we capture them by value
-        //void calcForces(const std::unique_ptr<Bins>& bins, const GlobalSettings& global_settings,
-        void calcForces(const GlobalSettings& global_settings,
+        void calcForces(Kokkos::View<double**> psi_tot, const GlobalSettings& global_settings,
                         const Kokkos::View<double**> coords, const Kokkos::View<double**> vel);
 
         void calcWallForce(Kokkos::View<double**> psi_con, Kokkos::View<double**> psi_fric, 

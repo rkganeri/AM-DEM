@@ -47,12 +47,26 @@ bool depositPowder(std::unique_ptr<Particles>& particles,
         particles->initBins();
         particles->setParticleBins(global_settings);
 
+        // RK4 step 1
         // We perform an explicit RK-4 time stepping scheme (see Eqn 29 in paper)
         Kokkos::deep_copy(y1_pos,particles->coordsn_);
         Kokkos::deep_copy(y1_vel,particles->vn_);
-
-        particles->calcForces(global_settings, y1_pos, y1_vel);
+        // calculate the particle forces (stored in psi1)
+        particles->calcForces(psi1, global_settings, y1_pos, y1_vel);
+        // calculate updates position and velocity sub-increments
         updateRK4SubStep(particles, y2_pos, y2_vel, y1_vel, psi1, dt, 1);
+
+        // RK4 step 2
+        particles->calcForces(psi2, global_settings, y2_pos, y2_vel);
+        updateRK4SubStep(particles, y3_pos, y3_vel, y2_vel, psi2, dt, 2);
+
+        // RK4 step 3
+        particles->calcForces(psi3, global_settings, y3_pos, y3_vel);
+        updateRK4SubStep(particles, y4_pos, y4_vel, y3_vel, psi3, dt, 3);
+
+        // RK4 step 4
+        particles->calcForces(psi4, global_settings, y4_pos, y4_vel);
+        // the last step is different as we now do a full time step using all intermediary states
 
 
         // plot results as specified
@@ -75,8 +89,8 @@ void updateRK4SubStep(const std::unique_ptr<Particles>& particles,
     // (only valid for sub-steps 1-3)
 
     const int num_particles = particles->num_particles_;
-    double tstep;
-    if ( (sub_step == 1) or (sub_step == 2) ) {
+    double tstep = 0.0;
+    if ((sub_step == 1) or (sub_step == 2)) {
         tstep = dt/2.0;
     } else if (sub_step == 3) {
         tstep = dt;
@@ -89,6 +103,7 @@ void updateRK4SubStep(const std::unique_ptr<Particles>& particles,
     // create a pointer to the underlying object
     Particles* particles_ptr = particles.get();
 
+    typedef Kokkos::MDRangePolicy<Kokkos::Rank<2>> mdrange_policy2;
     Kokkos::parallel_for("update_RK4_substep", mdrange_policy2({0,0},{num_particles,3}), 
             KOKKOS_LAMBDA(int i, int j) {
 

@@ -27,8 +27,7 @@ Particles::Particles(const int num_particles, const GlobalSettings& gs)
       vn_("vn",num_particles),  // (num_particles,3)
       vnp1_("vnp1",num_particles),  // (num_particles,3)
       coordsn_("coordsn",num_particles),  // (num_particles,3)
-      coordsnp1_("coordsnp1",num_particles),  // (num_particles,3)
-      psi_tot_("psi_tot",num_particles)  // (num_particles,3)
+      coordsnp1_("coordsnp1",num_particles)  // (num_particles,3)
 {   }  
 
 // initialize particle radii and locations (also calculate mass/volume)
@@ -176,9 +175,8 @@ void Particles::setParticleBins(const GlobalSettings& gs) {
 }
 
 
-// calculate particle-particle and particle-wall forces
-//void Particles::calcForces(const std::unique_ptr<Bins>& bins, const GlobalSettings& global_settings,
-void Particles::calcForces(const GlobalSettings& global_settings,
+// calculate particle-particle and particle-wall forces, which get stored in psi_tot
+void Particles::calcForces(Kokkos::View<double**> psi_tot, const GlobalSettings& global_settings,
                            const Kokkos::View<double**> coords, const Kokkos::View<double**> vel) {
     
     // create separate views for each of the force components
@@ -320,10 +318,10 @@ void Particles::calcForces(const GlobalSettings& global_settings,
     // 4. sum up all forces and add gravity contribution (eqns 1, 16 in paper)
     const double g = 9.81;
     Kokkos::parallel_for("sum_forces", num_particles_, KOKKOS_LAMBDA (int i) {
-        psi_tot_(i,0) = psi_con(i,0) + psi_fric(i,0) + psi_env(i,0);
-        psi_tot_(i,1) = psi_con(i,1) + psi_fric(i,1) + psi_env(i,1);
+        psi_tot(i,0) = psi_con(i,0) + psi_fric(i,0) + psi_env(i,0);
+        psi_tot(i,1) = psi_con(i,1) + psi_fric(i,1) + psi_env(i,1);
         // grav force gets added to z-component
-        psi_tot_(i,2) = psi_con(i,2) + psi_fric(i,2) + psi_env(i,2) - mass_(i)*g;
+        psi_tot(i,2) = psi_con(i,2) + psi_fric(i,2) + psi_env(i,2) - mass_(i)*g;
     });
 
 
