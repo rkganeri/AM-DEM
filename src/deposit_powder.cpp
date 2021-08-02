@@ -21,6 +21,20 @@ bool depositPowder(std::unique_ptr<Particles>& particles,
     int num_time_steps = static_cast<int>(ceil((end_time-current_time)/dt));
     const int plot_step_freq = static_cast<int>(global_settings.plot_time_freq_/dt);
 
+    // Kokkos views we create for the RK-4 time stepping
+    Kokkos::View<double*[3]> y1_pos("y1_pos",particles->num_particles_);
+    Kokkos::View<double*[3]> y1_vel("y1_vel",particles->num_particles_);
+    Kokkos::View<double*[3]> psi1("psi1",particles->num_particles_);
+    Kokkos::View<double*[3]> y2_pos("y2_pos",particles->num_particles_);
+    Kokkos::View<double*[3]> y2_vel("y2_vel",particles->num_particles_);
+    Kokkos::View<double*[3]> psi2("psi2",particles->num_particles_);
+    Kokkos::View<double*[3]> y3_pos("y3_pos",particles->num_particles_);
+    Kokkos::View<double*[3]> y3_vel("y3_vel",particles->num_particles_);
+    Kokkos::View<double*[3]> psi3("psi3",particles->num_particles_);
+    Kokkos::View<double*[3]> y4_pos("y4_pos",particles->num_particles_);
+    Kokkos::View<double*[3]> y4_vel("y4_vel",particles->num_particles_);
+    Kokkos::View<double*[3]> psi4("psi4",particles->num_particles_);
+
     // create initial plot state
     plotState(particles, current_time, 0);
 
@@ -34,12 +48,11 @@ bool depositPowder(std::unique_ptr<Particles>& particles,
         particles->setParticleBins(global_settings);
 
         // We perform an explicit RK-4 time stepping scheme (see Eqn 29 in paper)
-        Kokkos::View<double*[3]> y1_pos("y1_pos",particles->num_particles_);
-        Kokkos::View<double*[3]> y1_vel("y1_vel",particles->num_particles_);
         Kokkos::deep_copy(y1_pos,particles->coordsn_);
         Kokkos::deep_copy(y1_vel,particles->vn_);
-        //particles->calcForces(bins, global_settings, y1_pos, y1_vel);
+
         particles->calcForces(global_settings, y1_pos, y1_vel);
+        updateRK4SubStep(particles, y2_pos, y2_vel, y1_vel, psi1, dt, 1);
 
 
         // plot results as specified
@@ -48,6 +61,41 @@ bool depositPowder(std::unique_ptr<Particles>& particles,
     }
 
     return true;
+
+}
+
+void updateRK4SubStep(const std::unique_ptr<Particles>& particles,
+                      Kokkos::View<double**> y_pos,
+                      Kokkos::View<double**> y_vel,
+                      const Kokkos::View<double**> y_vel_prev,
+                      const Kokkos::View<double**> psi,
+                      const double dt, const int sub_step) {
+
+    // Sets the new y_pos and y_vel values for each RK4 time step sub-increment
+    // (only valid for sub-steps 1-3)
+
+    const int num_particles = particles->num_particles_;
+    double tstep;
+    if ( (sub_step == 1) or (sub_step == 2) ) {
+        tstep = dt/2.0;
+    } else if (sub_step == 3) {
+        tstep = dt;
+    } else {
+        terminateError(fmt::format("sub_step should only be 1, 2, or 3 in updateRK4SubStep. "
+            "Current sub_step value is {}", sub_step));
+    }
+            
+    // we can' access info stored within a unique pointer within kokkos lambdas so we
+    // create a pointer to the underlying object
+    Particles* particles_ptr = particles.get();
+
+    Kokkos::parallel_for("update_RK4_substep", mdrange_policy2({0,0},{num_particles,3}), 
+            KOKKOS_LAMBDA(int i, int j) {
+
+        y_vel(i,j) = particles_ptr->vn_(i,j) + tstep*psi(i,j)/particles_ptr->mass_(i);
+        y_pos(i,j) = particles_ptr->coordsn_(i,j) + tstep*y_vel_prev(i,j);
+
+    });
 
 }
 
