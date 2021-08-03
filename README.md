@@ -87,22 +87,22 @@ CMakeLists.txt file.
 
 
 3) Build the current code using CMake. Create a build directory within the home directory for this repo. Run
-   CMake using the appropriate host-config file for your build type, desired settings, and compiler.
-   A few template host-config files using the Clang 11.1 compiler on a Mac operating the High Sierra OS 
-   (10.13.6) are provided. For other example host-config files look at the BLT github repo and corresponding
-   documentation, especially if you are linking to CUDA via nvcc, as that can sometimes be a bit tricky.
-   To actually compile the executable once all TPLs are built, run from the home directory of the repo e.g.:
-   ```
-   mkdir build_clang11_debug
-   cd build_clang11_debug
-   cmake -C ../host-configs/macos_10_13_x86_64_clang11_debug.cmake ..
-   make -j
-   ```
+CMake using the appropriate host-config file for your build type, desired settings, and compiler.
+A few template host-config files using the Clang 11.1 compiler on a Mac operating the High Sierra OS 
+(10.13.6) are provided. For other example host-config files look at the BLT github repo and corresponding
+documentation, especially if you are linking to CUDA via nvcc, as that can sometimes be a bit tricky.
+To actually compile the executable once all TPLs are built, run from the home directory of the repo e.g.:
+```
+mkdir build_clang11_debug
+cd build_clang11_debug
+cmake -C ../host-configs/macos_10_13_x86_64_clang11_debug.cmake ..
+make -j
+```
 
-   To execute the test problems, which should all pass, simply run:
-   ```
-   make test
-   ```
+To execute the test problems, which should all pass, simply run:
+```
+make test
+```
 
    
 
