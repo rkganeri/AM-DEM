@@ -44,6 +44,8 @@ class Particles: public Bins {
 
         void initParticles(const GlobalSettings& global_settings, int seed=0);
 
+        void updateState();
+
         void setParticleBins(const GlobalSettings& global_settings);
 
 

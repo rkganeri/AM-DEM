@@ -121,9 +121,6 @@ void Particles::initParticles(const GlobalSettings& global_settings, int seed) {
     Kokkos::parallel_for("calc_mass_vol", num_particles_, KOKKOS_LAMBDA(int i) {
         volume_(i) = 4./3.*M_PI*pow(radius_(i),3.);
         mass_(i) = rho*volume_(i);
-        vn_(i,0) = 0.0;
-        vn_(i,1) = 0.0;
-        vn_(i,2) = 0.0;
     });
 
     // finally lets set some parameters we use for Hertzian contact (these only need to be calculated once)
@@ -136,6 +133,17 @@ void Particles::initParticles(const GlobalSettings& global_settings, int seed) {
 
 
 }
+
+
+// update state data at the beginning of a new time step
+void Particles::updateState() {
+
+    // copy data from state np1 to state n
+    Kokkos::deep_copy(coordsn_, coordsnp1_);
+    Kokkos::deep_copy(vn_, vnp1_);
+
+}
+    
 
 
 // set the bins based upon particle positions
