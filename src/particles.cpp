@@ -314,7 +314,7 @@ void Particles::calcForces(Kokkos::View<double**> psi_tot, const GlobalSettings&
 
 
     // 3.  use Stoke's law to calculate drag (eqn 15 in paper)
-    const double viscosity_ar = 2.23e-5; // [kg/m-s or Pa-s] at NTP
+    const double viscosity_ar = 2.23e-5; // [kg/m-s or Pa-s] at NTP (1.747e-5 for N)
     //const double rho_ar = 1.66;  // [kg/m^3] at NTP (20 C, 1 atm) for argon atmosphere
     Kokkos::parallel_for("calc_drag", num_particles_, KOKKOS_LAMBDA (int i) {
         double coef =  -6.0 * M_PI * viscosity_ar * radius_(i);

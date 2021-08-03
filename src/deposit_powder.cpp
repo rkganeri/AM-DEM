@@ -20,6 +20,10 @@ bool depositPowder(std::unique_ptr<Particles>& particles,
     const double dt = global_settings.dt_;
     int num_time_steps = static_cast<int>(ceil((end_time-current_time)/dt));
     const int plot_step_freq = static_cast<int>(global_settings.plot_time_freq_/dt);
+    // with a max speed of roughly 0.2 m/s, each bin having dimesnion of roughly 1e-4,
+    // and a time step size of 5e-08, it takes roughly 10k time steps for a particle to 
+    // move through a bin... thus with a safety factor of 2 we update only every 5000 steps
+    const int rebin_freq = 5000;
 
     // Kokkos views we create for the RK-4 time stepping
     Kokkos::View<double*[3]> y1_pos("y1_pos",particles->num_particles_);
@@ -40,19 +44,20 @@ bool depositPowder(std::unique_ptr<Particles>& particles,
 
     // create initial plot state
     plotState(particles, current_time, 0);
-
-    // hard code hack for now
-    num_time_steps = 1e4;
+    
+    // time loop where it all happens!
     for (int istep=1; istep<=num_time_steps; istep++) {
 
+        current_time += dt;
         // copy state data (position and velocity) from state np1 to state n
         particles->updateState();
 
         // update our bins
-        // TODO: only need to do this every N steps based upon particle vel, bin size,
-        // and how far a particle can move in a step
-        particles->initBins();
-        particles->setParticleBins(global_settings);
+        if ((istep % rebin_freq == 0) or (istep == 1)) {
+            print(fmt::format("Starting Step {} now, time = {:14.7e}", istep, current_time)
+            particles->initBins();
+            particles->setParticleBins(global_settings);
+        }
 
         // RK4 step 1
         // We perform an explicit RK-4 time stepping scheme (see Eqn 29 in 2016 paper)
