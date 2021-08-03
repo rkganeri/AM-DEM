@@ -11,7 +11,7 @@
 # Definitions
 #---------------------------------------
 set(amdem_defines ${amdem_defines} AMDEM_HOST_ONLY CACHE PATH "")
-set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
 
 #---------------------------------------
 # Compilers
@@ -40,10 +40,10 @@ set(ENABLE_CUDA OFF CACHE BOOL "")
 # Third Party Library Dependencies
 # We only set lib paths here that have separate installs depending on build type
 #------------------------------------------------------------------------------
-SET(KOKKOS_ROOT "${CMAKE_CURRENT_LIST_DIR}/../TPLs/kokkos/build_clang11_omp_debug/kokkos_install" CACHE PATH "")
+SET(KOKKOS_ROOT "${CMAKE_CURRENT_LIST_DIR}/../TPLs/kokkos/build_clang11_omp_O3/kokkos_install" CACHE PATH "")
 SET(KOKKOS_DIR "${KOKKOS_ROOT}/lib/cmake/Kokkos" CACHE PATH "")
 
-#SET(KOKKOS_KERNELS_ROOT "${CMAKE_CURRENT_LIST_DIR}/../TPLs/kokkos-kernels/build_clang11_omp_debug/kokkos-kernels_install" CACHE PATH "")
+#SET(KOKKOS_KERNELS_ROOT "${CMAKE_CURRENT_LIST_DIR}/../TPLs/kokkos-kernels/build_clang11_omp_O3/kokkos-kernels_install" CACHE PATH "")
 #SET(KOKKOS_KERNELS_DIR "${KOKKOS_KERNELS_ROOT}/lib/cmake/KokkosKernels" CACHE PATH "")
 
 
