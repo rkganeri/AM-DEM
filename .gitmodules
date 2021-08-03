@@ -4,3 +4,9 @@
 [submodule "TPLs/kokkos"]
 	path = TPLs/kokkos
 	url = https://github.com/kokkos/kokkos.git
+[submodule "TPLs/fmt"]
+	path = TPLs/fmt
+	url = https://github.com/fmtlib/fmt.git
+[submodule "TPLs/lean-vtk"]
+	path = TPLs/lean-vtk
+	url = https://github.com/mmorse1217/lean-vtk.git

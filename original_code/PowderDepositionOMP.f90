@@ -1,4 +1,4 @@
-program PowderDepositionShankarMP
+program PowderDepositionOMP
 use RDistributions
 use omp_lib
 implicit none
@@ -395,7 +395,7 @@ end do
 close(unit=100)
 close(unit=200)
 
-end program PowderDepositionShankarMP
+end program PowderDepositionOMP
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
