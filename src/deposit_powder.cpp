@@ -54,7 +54,7 @@ bool depositPowder(std::unique_ptr<Particles>& particles,
 
         // update our bins
         if ((istep % rebin_freq == 0) or (istep == 1)) {
-            print(fmt::format("Starting Step {} now, time = {:14.7e}", istep, current_time)
+            print(fmt::format("Starting Step {} now, time = {:14.7e}", istep, current_time));
             particles->initBins();
             particles->setParticleBins(global_settings);
         }
