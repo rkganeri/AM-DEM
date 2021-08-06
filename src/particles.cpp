@@ -370,7 +370,7 @@ void Particles::calcWallForce(Kokkos::View<double**> psi_con, Kokkos::View<doubl
 
             double psi_con_wall[3] = {0};
             psi_con_wall[n_index] = -4.0/3.0*sqrt(rstar)*estar_*pow(delta_wall,1.5)*normal[n_index]
-                                    + damp_coef*delta_wall_dot*normal[n_index];
+                                    - damp_coef*delta_wall_dot*normal[n_index];
 
             psi_con(i,n_index) += psi_con_wall[n_index];
 
