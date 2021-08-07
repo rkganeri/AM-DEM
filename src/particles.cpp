@@ -129,7 +129,7 @@ void Particles::initParticles(const GlobalSettings& global_settings, int seed) {
     double nu = global_settings.nu_;
     estar_ = (e*e) / (e*(1-pow(nu,2.0)) + e*(1-pow(nu,2.0)));
     zeta_ = 0.1;    // damping coefficient
-    mu_fric_ = 0.1;  // friction coefficient
+    mu_fric_ = 0.2;  // friction coefficient
 
 
 }
