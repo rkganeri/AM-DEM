@@ -212,19 +212,19 @@ TEST(particles,calcWallForce) {
     // I calculated these via hand to ensure we're getting the right answers 
     EXPECT_FLOAT_EQ(h_psi_con(0,0), 0.0);
     EXPECT_FLOAT_EQ(h_psi_con(0,1), 0.0);
-    EXPECT_NEAR(h_psi_con(0,2), 0.206702392, 1.0e-06);
+    EXPECT_NEAR(h_psi_con(0,2), 0.207583282, 1.0e-06);
 
     EXPECT_FLOAT_EQ(h_psi_con(1,0), 0.0);
-    EXPECT_NEAR(h_psi_con(1,1), 0.563208091, 1.0e-06);
-    EXPECT_NEAR(h_psi_con(1,2), 0.198780606, 1.0e-06);
+    EXPECT_NEAR(h_psi_con(1,1), 0.563436343, 1.0e-06);
+    EXPECT_NEAR(h_psi_con(1,2), 0.199548353, 1.0e-06);
 
-    EXPECT_NEAR(h_psi_fric(0,0), -0.03697605, 1.0e-06);
-    EXPECT_NEAR(h_psi_fric(0,1), -0.01848802, 1.0e-06);
+    EXPECT_NEAR(h_psi_fric(0,0), -0.03713363, 1.0e-06);
+    EXPECT_NEAR(h_psi_fric(0,1), -0.01856681, 1.0e-06);
     EXPECT_FLOAT_EQ(h_psi_fric(0,2), 0);
 
-    EXPECT_NEAR(h_psi_fric(1,0), -0.08593382, 1.0e-06);
-    EXPECT_NEAR(h_psi_fric(1,1), 0.01777948, 1.0e-06);
-    EXPECT_NEAR(h_psi_fric(1,2), 0.10074973, 1.0e-06);
+    EXPECT_NEAR(h_psi_fric(1,0), -0.08609157, 1.0e-06);
+    EXPECT_NEAR(h_psi_fric(1,1), 0.01784815, 1.0e-06);
+    EXPECT_NEAR(h_psi_fric(1,2), 0.10079056, 1.0e-06);
 
     } // end wrapper to destroy views
     
@@ -315,17 +315,17 @@ TEST(particles,calcForces) {
     Kokkos::deep_copy(h_psi_tot, psi_tot);
 
     // I calculated these via hand to ensure we're getting the right answers 
-    EXPECT_NEAR(h_psi_tot(0,0), -1.0089893E+00, 1.0e-06);
-    EXPECT_NEAR(h_psi_tot(0,1), -4.5487070E-01, 1.0e-07);
-    EXPECT_NEAR(h_psi_tot(0,2), 1.9577268E-01, 1.0e-07);
+    EXPECT_NEAR(h_psi_tot(0,0), -1.0091896E+00, 1.0e-06);
+    EXPECT_NEAR(h_psi_tot(0,1), -4.5517011E-01, 1.0e-07);
+    EXPECT_NEAR(h_psi_tot(0,2), 1.9581155E-01, 1.0e-07);
 
     EXPECT_NEAR(h_psi_tot(1,0), -7.0047425E-10, 1.0e-15);
-    EXPECT_NEAR(h_psi_tot(1,1), 4.0592753E-01, 1.0e-07);
+    EXPECT_NEAR(h_psi_tot(1,1), 4.0621722E-01, 1.0e-07);
     EXPECT_NEAR(h_psi_tot(1,2), -1.1119335E-10, 1.0e-15);
 
-    EXPECT_NEAR(h_psi_tot(2,0), 1.0089893E+00, 1.0e-06);
-    EXPECT_NEAR(h_psi_tot(2,1), 4.8943169E-02, 1.0e-08);
-    EXPECT_NEAR(h_psi_tot(2,2), -1.9577268E-01, 1.0e-07);
+    EXPECT_NEAR(h_psi_tot(2,0), 1.0091896E+00, 1.0e-06);
+    EXPECT_NEAR(h_psi_tot(2,1), 4.8952888E-02, 1.0e-08);
+    EXPECT_NEAR(h_psi_tot(2,2), -1.9581155E-01, 1.0e-07);
 
     } // end wrapper to destroy views
     

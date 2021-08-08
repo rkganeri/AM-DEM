@@ -94,19 +94,19 @@ TEST(time_steps,updateRK4) {
     Kokkos::deep_copy(y1_pos,particles->coordsn_);
     Kokkos::deep_copy(y1_vel,particles->vn_);
 
-    updateRK4SubStep(particles, y2_pos, y2_vel, y1_vel, psi_tot, global_settings.dt_, 1);
+    updateRK4SubStep(particles, y2_pos, y2_vel, y1_vel, psi_tot, 5.0e-08, 1);
 
     Kokkos::View<double**>::HostMirror h_y2_pos = Kokkos::create_mirror_view(y2_pos);
     Kokkos::View<double**>::HostMirror h_y2_vel = Kokkos::create_mirror_view(y2_vel);
     Kokkos::deep_copy(h_y2_pos, y2_pos);
     Kokkos::deep_copy(h_y2_vel, y2_vel);
 
-    EXPECT_NEAR(h_y2_vel(0,0), -1.2918698E+02, 1.0e-04);
-    EXPECT_NEAR(h_y2_vel(0,1), -5.8234917E+01, 1.0e-05);
-    EXPECT_NEAR(h_y2_vel(0,2), 2.4885358E+01, 1.0e-05);
+    EXPECT_NEAR(h_y2_vel(0,0), -1.2921265E+02, 1.0e-04);
+    EXPECT_NEAR(h_y2_vel(0,1), -5.8273282E+01, 1.0e-05);
+    EXPECT_NEAR(h_y2_vel(0,2), 2.4890339E+01, 1.0e-05);
 
     EXPECT_NEAR(h_y2_vel(1,0), 9.9999886E-02, 1.0e-08);
-    EXPECT_NEAR(h_y2_vel(1,1), 6.5786235E+01, 1.0e-05);
+    EXPECT_NEAR(h_y2_vel(1,1), 6.5833219E+01, 1.0e-05);
     EXPECT_NEAR(h_y2_vel(1,2), -2.0000002E-01, 1.0e-07);
 
     EXPECT_NEAR(h_y2_pos(0,0), 2.5000250E-04, 1.0e-10);
@@ -118,8 +118,8 @@ TEST(time_steps,updateRK4) {
     EXPECT_NEAR(h_y2_pos(2,2), 1.0000000E-03, 1.0e-09);
 
     // now let's do the next 2 steps to make sure we still get what we expect
-    updateRK4SubStep(particles, y3_pos, y3_vel, y2_vel, psi_tot, global_settings.dt_, 2);
-    updateRK4SubStep(particles, y4_pos, y4_vel, y3_vel, psi_tot, global_settings.dt_, 3);
+    updateRK4SubStep(particles, y3_pos, y3_vel, y2_vel, psi_tot, 5.0e-08, 2);
+    updateRK4SubStep(particles, y4_pos, y4_vel, y3_vel, psi_tot, 5.0e-08, 3);
 
     // finally copy these views back and query them
     Kokkos::View<double**>::HostMirror h_y3_pos = Kokkos::create_mirror_view(y3_pos);
@@ -131,21 +131,21 @@ TEST(time_steps,updateRK4) {
     Kokkos::deep_copy(h_y4_pos, y4_pos);
     Kokkos::deep_copy(h_y4_vel, y4_vel);
 
-    EXPECT_NEAR(h_y3_vel(0,0), -1.2918698E+02, 1.0e-04);
-    EXPECT_NEAR(h_y3_vel(1,1), 6.5786235E+01, 1.0e-05);
-    EXPECT_NEAR(h_y3_vel(2,2), -1.2256549E+02, 1.0e-04);
+    EXPECT_NEAR(h_y3_vel(0,0), -1.2921265E+02, 1.0e-04);
+    EXPECT_NEAR(h_y3_vel(1,1), 6.5833219E+01, 1.0e-05);
+    EXPECT_NEAR(h_y3_vel(2,2), -1.2258983E+02, 1.0e-04);
 
-    EXPECT_NEAR(h_y3_pos(0,1), 4.9854413E-04, 1.0e-10);
+    EXPECT_NEAR(h_y3_pos(0,1), 4.9854317E-04, 1.0e-10);
     EXPECT_NEAR(h_y3_pos(1,2), 9.9999500E-04, 1.0e-10);
-    EXPECT_NEAR(h_y3_pos(2,0), 2.9244146E-04, 1.0e-10);
+    EXPECT_NEAR(h_y3_pos(2,0), 2.9244460E-04, 1.0e-10);
 
-    EXPECT_NEAR(h_y4_vel(0,0), -2.5847395E+02, 1.0e-04);
-    EXPECT_NEAR(h_y4_vel(1,1), 1.3162247E+02, 1.0e-04);
-    EXPECT_NEAR(h_y4_vel(2,1), 6.1282747E+01, 1.0e-05);
+    EXPECT_NEAR(h_y4_vel(0,0), -2.5852530E+02, 1.0e-04);
+    EXPECT_NEAR(h_y4_vel(1,1), 1.3171644E+02, 1.0e-04);
+    EXPECT_NEAR(h_y4_vel(2,1), 6.1294915E+01, 1.0e-05);
 
-    EXPECT_NEAR(h_y4_pos(0,2), 1.0012443E-03, 1.0e-09);
+    EXPECT_NEAR(h_y4_pos(0,2), 1.0012445E-03, 1.0e-09);
     EXPECT_NEAR(h_y4_pos(1,0), 2.5000500E-04, 1.0e-10);
-    EXPECT_NEAR(h_y4_pos(2,2), 9.9387173E-04, 1.0e-10);
+    EXPECT_NEAR(h_y4_pos(2,2), 9.9387051E-04, 1.0e-10);
 
 
     } // end wrapper to destroy views

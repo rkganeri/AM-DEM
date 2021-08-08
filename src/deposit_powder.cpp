@@ -20,10 +20,10 @@ bool depositPowder(std::unique_ptr<Particles>& particles,
     const double dt = global_settings.dt_;
     int num_time_steps = static_cast<int>(ceil((end_time-current_time)/dt));
     const int plot_step_freq = static_cast<int>(global_settings.plot_time_freq_/dt);
-    // with a max speed of roughly 0.2 m/s, each bin having dimesnion of roughly 1e-4,
-    // and a time step size of 5e-08, it takes roughly 10k time steps for a particle to 
-    // move through a bin... thus with a safety factor of 2 we update only every 5000 steps
-    const int rebin_freq = 5000;
+    // with a max speed of roughly 0.25 m/s, each bin having dimesnion of roughly 1e-4,
+    // and a time step size of 5.0e-08, it takes roughly 8k time steps for a particle to 
+    // move through a bin... thus with a safety factor of 4 we update only every 2000 steps
+    const int rebin_freq = 2000;
 
     // Kokkos views we create for the RK-4 time stepping
     Kokkos::View<double*[3]> y1_pos("y1_pos",particles->num_particles_);

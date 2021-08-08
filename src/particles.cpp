@@ -274,7 +274,7 @@ void Particles::calcForces(Kokkos::View<double**> psi_tot, const GlobalSettings&
                             damp_coef = 2.0*zeta_*sqrt(2.0*estar_*mstar)*pow(rstar*delta,0.25);
                             for (int index=0; index<3; index++) {
                                 psi_con_part[index] = -4.0/3.0*sqrt(rstar)*estar_*pow(delta,1.5)*normal[index]
-                                                      - damp_coef*delta_dot*normal[index];
+                                                      + damp_coef*delta_dot*normal[index];
 
                                 psi_con(i,index) += psi_con_part[index];
                                 
@@ -369,7 +369,7 @@ void Particles::calcWallForce(Kokkos::View<double**> psi_con, Kokkos::View<doubl
 
             double psi_con_wall[3] = {0};
             psi_con_wall[n_index] = -4.0/3.0*sqrt(rstar)*estar_*pow(delta_wall,1.5)*normal[n_index]
-                                    - damp_coef*delta_wall_dot*normal[n_index];
+                                    + damp_coef*delta_wall_dot*normal[n_index];
 
             psi_con(i,n_index) += psi_con_wall[n_index];
 
