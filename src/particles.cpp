@@ -129,7 +129,7 @@ void Particles::initParticles(const GlobalSettings& global_settings, int seed) {
     double nu = global_settings.nu_;
     estar_ = (e*e) / (e*(1-pow(nu,2.0)) + e*(1-pow(nu,2.0)));
     zeta_ = 0.1;    // damping coefficient
-    mu_fric_ = 0.1;  // friction coefficient
+    mu_fric_ = 0.2;  // friction coefficient
 
 
 }
@@ -158,9 +158,9 @@ void Particles::setParticleBins(const GlobalSettings& gs) {
     Kokkos::parallel_for("set_particle_bins", num_particles_, KOKKOS_LAMBDA(int i) {
         // we use the c-style int conversion since we are in a parallel for loop which may need
         // to be compiled with nvcc if using GPUs
-        particle_bin_(i,0) = (int) (coordsnp1_(i,0)/bin_length);
-        particle_bin_(i,1) = (int) (coordsnp1_(i,1)/bin_width);
-        particle_bin_(i,2) = (int) (coordsnp1_(i,2)/bin_height);
+        particle_bin_(i,0) = (int) (coordsn_(i,0)/bin_length);
+        particle_bin_(i,1) = (int) (coordsn_(i,1)/bin_width);
+        particle_bin_(i,2) = (int) (coordsn_(i,2)/bin_height);
     });
 
 
@@ -256,7 +256,6 @@ void Particles::calcForces(Kokkos::View<double**> psi_tot, const GlobalSettings&
                         normal[1] = coords(j,1) - coords(i,1);
                         normal[2] = coords(j,2) - coords(i,2);
                         dist = utilities::norm2(normal, 3);
-
                         if ( (dist < (radius_(i)+radius_(j))) and (j != i) ) {
                             for (int index=0; index<3; index++) {
                                 // normalize normal vector
@@ -275,7 +274,7 @@ void Particles::calcForces(Kokkos::View<double**> psi_tot, const GlobalSettings&
                             damp_coef = 2.0*zeta_*sqrt(2.0*estar_*mstar)*pow(rstar*delta,0.25);
                             for (int index=0; index<3; index++) {
                                 psi_con_part[index] = -4.0/3.0*sqrt(rstar)*estar_*pow(delta,1.5)*normal[index]
-                                                      + damp_coef*delta_dot*normal[index];
+                                                      - damp_coef*delta_dot*normal[index];
 
                                 psi_con(i,index) += psi_con_part[index];
                                 
@@ -370,7 +369,7 @@ void Particles::calcWallForce(Kokkos::View<double**> psi_con, Kokkos::View<doubl
 
             double psi_con_wall[3] = {0};
             psi_con_wall[n_index] = -4.0/3.0*sqrt(rstar)*estar_*pow(delta_wall,1.5)*normal[n_index]
-                                    + damp_coef*delta_wall_dot*normal[n_index];
+                                    - damp_coef*delta_wall_dot*normal[n_index];
 
             psi_con(i,n_index) += psi_con_wall[n_index];
 
