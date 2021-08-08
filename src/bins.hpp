@@ -24,7 +24,6 @@ class Bins {
 
         // methods - again delete default constructor
         Bins(const GlobalSettings& gs);
-        Bins() = delete;
 
         void initBins();
 
