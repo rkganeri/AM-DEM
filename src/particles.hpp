@@ -38,9 +38,7 @@ class Particles: public Bins {
 
 
         // Methods below:
-        // delete the default constructor
         Particles(const int num_particles, const GlobalSettings& gs);
-        Particles() = delete;
 
         void initParticles(const GlobalSettings& global_settings, int seed=0);
 
