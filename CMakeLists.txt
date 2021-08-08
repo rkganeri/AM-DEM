@@ -216,4 +216,14 @@ if(ENABLE_TESTS) # on by default with BLT
 
     blt_add_test(NAME test_utilities
                  COMMAND test_utilities)
+
+    # 3. test_time_steps
+    blt_add_executable(NAME         test_time_steps
+                       SOURCES      ${test_time_steps_source_files}
+                       INCLUDES     ${test_include_dirs}
+                       DEPENDS_ON   ${testing_dependencies})
+
+    blt_add_test(NAME test_time_steps
+                 COMMAND test_time_steps)
+
 endif()
