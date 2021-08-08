@@ -1,7 +1,11 @@
 # AM-DEM
 
 A discrete element method (DEM) code for simulating powder deposition during additive manufacturing (AM).
-A full description of the governing equations and basic methodology is provided in the following paper:
+Powder particles are modeled as spheres of varying radii and elastic contact between particles and the
+bounding box is calculated using the Hertzian contact theory. The particles are initialized at a 
+height a couple mm above the bottom surface and then dropped to simulate the powder deposition during a
+layer-by-layer AM process. A full description of the governing equations and basic methodology is provided 
+in the following paper:
 
 Ganeriwala, R., & Zohdi, T. I. (2016). A coupled discrete element-finite difference model of selective 
 laser sintering. Granular Matter, 18(2). https://doi.org/10.1007/s10035-016-0626-0
@@ -110,7 +114,7 @@ Basic Running Instructions:
 
 Many global parameters are set in the file src/global\_settings.hpp.  The easiest place to modify size of 
 bounding volume and particle size is within that file.  The only required argument for running the code is 
-the number of particles via the -n flag.  600 particles were used in the 2016 paper.  Plot files are writtin 
+the number of particles via the -n flag.  600 particles were used in the 2016 paper.  Plot files are written 
 in VTK format, and the results can be visualized using an open source vis package such as Visit or Paraview.
 
 
