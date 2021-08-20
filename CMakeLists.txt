@@ -3,6 +3,14 @@
 cmake_minimum_required(VERSION 3.18)
 set(CPP_VERSION "17")
 
+# Allows MPI/OpenMP/CUDA/etc targets to be exported in the amdem namespace
+set(BLT_EXPORT_THIRDPARTY ON CACHE BOOL "")
+
+set(AMDEM_INSTALL_LIBDIR "${CMAKE_INSTALL_PREFIX}/lib" CACHE PATH "")
+set(AMDEM_INSTALL_BINDIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE PATH "")
+set(AMDEM_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_PREFIX}/include" CACHE PATH "")
+
+
 # set project name and info
 project(amdem
         VERSION 1.0
@@ -124,9 +132,18 @@ endif()
 if(NOT EXISTS ${LEAN-VTK_DIR}/lib/LeanVTK-1.0/LeanVTK-config.cmake)
     message(FATAL_ERROR "Missing required 'LEAN-VTK_DIR' variable pointing to an installed lean-vtk")
 endif()
-if(NOT DEFINED LEAN-VTK_INCLUDE_DIR)
-    SET(LEAN-VTK_INCLUDE_DIR "${LEAN-VTK_DIR}/include/LeanVTK-1.0" CACHE PATH "")
-endif()
+#if(NOT DEFINED LEAN-VTK_INCLUDE_DIR)
+#    SET(LEAN-VTK_INCLUDE_DIR "${LEAN-VTK_DIR}/include/LeanVTK-1.0" CACHE PATH "")
+#endif()
+
+# https://llnl-blt.readthedocs.io/en/develop/tutorial/third_party_libraries.html
+find_path(LEAN-VTK_INCLUDE_DIR lean_vtk.hpp
+          PATHS ${LEAN-VTK_DIR}/include/LeanVTK-1.0
+          NO_DEFAULT_PATH
+          NO_CMAKE_ENVIRONMENT_PATH
+          NO_CMAKE_PATH
+          NO_SYSTEM_ENVIRONMENT_PATH
+          NO_CMAKE_SYSTEM_PATH)
 
 find_library(LEAN-VTK_LIBRARY NAMES LeanVTK
              PATHS ${LEAN-VTK_LIB_DIR}
@@ -136,17 +153,36 @@ find_library(LEAN-VTK_LIBRARY NAMES LeanVTK
              NO_SYSTEM_ENVIRONMENT_PATH
              NO_CMAKE_SYSTEM_PATH)
 
+include(FindPackageHandleStandardArgs)
+# handle the QUIETLY and REQUIRED arguments and set LeanVTK_FOUND to TRUE
+# if all listed variables are TRUE
+find_package_handle_standard_args(LeanVTK  DEFAULT_MSG
+                                  LEAN-VTK_INCLUDE_DIR
+                                  LEAN-VTK_LIBRARY )
+
 blt_import_library(NAME       LeanVTK
+                   TREAT_INCLUDES_AS_SYSTEM ON
+                   DEFINES    HAVE_LeanVTK=1
                    INCLUDES   ${LEAN-VTK_INCLUDE_DIR}
                    LIBRARIES  ${LEAN-VTK_LIBRARY}
                    EXPORTABLE ON)
 
 set(amdem_dependencies ${amdem_dependencies} LeanVTK)
+set(amdem_targets ${amdem_targets} LeanVTK)
 
 #------------------------------------------------------------------------------
 # Include the header only CLI11 library
 #------------------------------------------------------------------------------
-set(amdem_include_dirs ${amdem_include_dirs} "${CMAKE_CURRENT_LIST_DIR}/TPLs/CLI11")
+find_path(CLI11_INCLUDE_DIR CLI11.hpp
+          PATHS ${CMAKE_CURRENT_LIST_DIR}/TPLs/CLI11
+          NO_DEFAULT_PATH
+          NO_CMAKE_ENVIRONMENT_PATH
+          NO_CMAKE_PATH
+          NO_SYSTEM_ENVIRONMENT_PATH
+          NO_CMAKE_SYSTEM_PATH)
+
+#set(amdem_include_dirs ${amdem_include_dirs} "${CMAKE_CURRENT_LIST_DIR}/TPLs/CLI11")
+set(amdem_include_dirs ${amdem_include_dirs} ${CLI11_INCLUDE_DIR})
 
 
 ##------------------------------------------------------------------------------
