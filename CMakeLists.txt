@@ -212,6 +212,16 @@ set_target_properties(amdem PROPERTIES CXX_EXTENSIONS OFF)
 set_target_properties(amdem-lib PROPERTIES CXX_EXTENSIONS OFF)
 
 
+#--------------------------------------------------------
+# Install Targets for amdem lib
+#--------------------------------------------------------
+install(FILES ${amdem-lib_header_files} DESTINATION include)
+install(TARGETS amdem-lib
+  EXPORT amdem-lib
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
+
 ##------------------------------------------------------------------------------
 ## Set up unit tests
 ##------------------------------------------------------------------------------
